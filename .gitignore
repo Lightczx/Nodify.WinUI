@@ -1,0 +1,7 @@
+.idea
+.vs
+Nodify.WinUI/bin
+Nodify.WinUI/obj
+Nodify.WinUI/Properties/PublishProfiles
+
+*.user

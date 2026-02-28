@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Nodify.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Nodify.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
