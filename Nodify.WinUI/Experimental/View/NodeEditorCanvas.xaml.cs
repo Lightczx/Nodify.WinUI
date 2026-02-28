@@ -391,27 +391,46 @@ public sealed partial class NodeEditorCanvas : UserControl
         }
 
         int delta = pointer.Properties.MouseWheelDelta;
-        double zoomFactor = delta > 0 ? 1.1 : 0.9;
+        bool isCtrlPressed = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        bool isShiftPressed = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Shift).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
 
-        // Get mouse position relative to canvas
-        Point mousePos = e.GetCurrentPoint(MainCanvas).Position;
-
-        // Calculate new scale
-        double newScale = ViewModel.ViewportScale * zoomFactor;
-        newScale = Math.Max(0.1, Math.Min(5.0, newScale));
-
-        // Snap to 100% when close (within 5% range)
-        const double snapThreshold = 0.05; // 5% threshold
-        if (Math.Abs(newScale - 1.0) < snapThreshold && Math.Abs(ViewModel.ViewportScale - 1.0) >= snapThreshold)
+        if (isCtrlPressed)
         {
-            newScale = 1.0;
-        }
+            // Ctrl + 滚轮 = 缩放
+            double zoomFactor = delta > 0 ? 1.1 : 0.9;
 
-        // Adjust offset to zoom toward mouse position
-        double scaleChange = newScale / ViewModel.ViewportScale;
-        ViewModel.ViewportOffsetX = mousePos.X - (mousePos.X - ViewModel.ViewportOffsetX) * scaleChange;
-        ViewModel.ViewportOffsetY = mousePos.Y - (mousePos.Y - ViewModel.ViewportOffsetY) * scaleChange;
-        ViewModel.ViewportScale = newScale;
+            // Get mouse position relative to canvas
+            Point mousePos = e.GetCurrentPoint(MainCanvas).Position;
+
+            // Calculate new scale
+            double newScale = ViewModel.ViewportScale * zoomFactor;
+            newScale = Math.Max(0.1, Math.Min(5.0, newScale));
+
+            // Snap to 100% when close (within 5% range)
+            const double snapThreshold = 0.05; // 5% threshold
+            if (Math.Abs(newScale - 1.0) < snapThreshold && Math.Abs(ViewModel.ViewportScale - 1.0) >= snapThreshold)
+            {
+                newScale = 1.0;
+            }
+
+            // Adjust offset to zoom toward mouse position
+            double scaleChange = newScale / ViewModel.ViewportScale;
+            ViewModel.ViewportOffsetX = mousePos.X - (mousePos.X - ViewModel.ViewportOffsetX) * scaleChange;
+            ViewModel.ViewportOffsetY = mousePos.Y - (mousePos.Y - ViewModel.ViewportOffsetY) * scaleChange;
+            ViewModel.ViewportScale = newScale;
+        }
+        else if (isShiftPressed)
+        {
+            // Shift + 滚轮 = 左右平移
+            double panSpeed = 1.0;
+            ViewModel.ViewportOffsetX += delta * panSpeed / 10.0;
+        }
+        else
+        {
+            // 单纯滚轮 = 上下平移
+            double panSpeed = 1.0;
+            ViewModel.ViewportOffsetY += delta * panSpeed / 10.0;
+        }
 
         e.Handled = true;
     }
