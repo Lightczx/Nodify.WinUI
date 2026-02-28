@@ -7,7 +7,10 @@ Experimental/
 │
 ├── 📖 文档
 │   ├── README.md .................... 完整功能文档和 API 说明
+│   ├── QUICK_START.md ............... 快速入门指南 (用户友好版) 🆕
 │   ├── QUICKSTART.md ................ 5分钟快速入门指南
+│   ├── FEATURES.md .................. 功能清单和开发路线图 🆕
+│   ├── TESTING_GUIDE.md ............. 详细测试指南 🆕
 │   ├── PROJECT_SUMMARY.md ........... 项目总结和架构说明
 │   ├── TESTING_CHECKLIST.md ......... 90+ 项功能测试清单
 │   ├── WINUI3_COMPATIBILITY.md ...... WinUI 3 兼容性说明
@@ -39,6 +42,7 @@ Experimental/
 │   ├── NodeControl.xaml/cs .......... 节点 UI
 │   ├── ConnectionControl.xaml/cs .... 连接线 UI
 │   ├── NodeEditorCanvas.xaml/cs ..... 主画布 ⭐
+│   ├── PropertiesPanel.xaml/cs ...... 属性编辑面板 🆕
 │   └── MiniMapControl.xaml/cs ....... 小地图
 │
 ├── 📁 Helpers/ ...................... 辅助工具
@@ -46,6 +50,7 @@ Experimental/
 │
 ├── 📁 Converters/ ................... 值转换器
 │   ├── BoolToVisibilityConverter.cs . 布尔到可见性转换 🆕
+│   ├── NullToBoolConverter.cs ....... Null 检查转换 🆕
 │   └── PercentageConverter.cs ....... 数值到百分比字符串 (WinUI 3)
 │
 └── 📁 示例
@@ -61,11 +66,12 @@ Experimental/
 
 | 你的需求 | 推荐文档 | 阅读时间 |
 |---------|---------|---------|
-| 🚀 快速开始使用 | `QUICKSTART.md` | 5 分钟 |
+| 🚀 快速开始使用 | `QUICK_START.md` ⭐ | 5 分钟 |
+| ✅ 测试所有功能 | `TESTING_GUIDE.md` | 15 分钟 |
+| 📋 查看功能列表 | `FEATURES.md` | 10 分钟 |
 | 📚 了解所有功能 | `README.md` | 15 分钟 |
 | 🏗️ 理解架构设计 | `PROJECT_SUMMARY.md` | 10 分钟 |
 | 🔧 WinUI 3 兼容性 | `WINUI3_COMPATIBILITY.md` | 8 分钟 |
-| ✅ 测试验证功能 | `TESTING_CHECKLIST.md` | 30 分钟 |
 | 🔍 查找特定文件 | `INDEX.md` (本文件) | 2 分钟 |
 
 ---

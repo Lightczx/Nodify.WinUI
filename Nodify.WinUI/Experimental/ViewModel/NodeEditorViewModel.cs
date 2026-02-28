@@ -18,6 +18,7 @@ namespace Nodify.WinUI.Experimental.ViewModel
         private double _viewportScale = 1.0;
         private ConnectionViewModel _pendingConnection;
         private bool _isPanning;
+        private NodeViewModel _selectedNode;
 
         public ObservableCollection<NodeViewModel> Nodes { get; }
         public ObservableCollection<ConnectionViewModel> Connections { get; }
@@ -58,8 +59,30 @@ namespace Nodify.WinUI.Experimental.ViewModel
             set => SetProperty(ref _isPanning, value);
         }
 
+        public NodeViewModel SelectedNode
+        {
+            get => _selectedNode;
+            set
+            {
+                if (_selectedNode != value)
+                {
+                    if (_selectedNode != null)
+                        _selectedNode.IsSelected = false;
+                    
+                    SetProperty(ref _selectedNode, value);
+                    
+                    if (_selectedNode != null)
+                        _selectedNode.IsSelected = true;
+                    
+                    // Notify commands that depend on selected node
+                    (DeleteSelectedNodeCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         public ICommand AddNodeCommand { get; }
         public ICommand DeleteNodeCommand { get; }
+        public ICommand DeleteSelectedNodeCommand { get; }
         public ICommand DeleteConnectionCommand { get; }
         public ICommand ZoomInCommand { get; }
         public ICommand ZoomOutCommand { get; }
@@ -72,6 +95,7 @@ namespace Nodify.WinUI.Experimental.ViewModel
 
             AddNodeCommand = new RelayCommand<Point>(AddNode);
             DeleteNodeCommand = new RelayCommand<NodeViewModel>(DeleteNode);
+            DeleteSelectedNodeCommand = new RelayCommand(DeleteSelectedNode, () => SelectedNode != null);
             DeleteConnectionCommand = new RelayCommand<ConnectionViewModel>(DeleteConnection);
             ZoomInCommand = new RelayCommand(() => ViewportScale *= 1.2);
             ZoomOutCommand = new RelayCommand(() => ViewportScale /= 1.2);
@@ -104,7 +128,21 @@ namespace Nodify.WinUI.Experimental.ViewModel
                 Connections.Remove(connection);
             }
 
+            // Clear selection if this node is selected
+            if (SelectedNode == node)
+            {
+                SelectedNode = null;
+            }
+
             Nodes.Remove(node);
+        }
+
+        public void DeleteSelectedNode()
+        {
+            if (SelectedNode != null)
+            {
+                DeleteNode(SelectedNode);
+            }
         }
 
         public void DeleteConnection(ConnectionViewModel connection)

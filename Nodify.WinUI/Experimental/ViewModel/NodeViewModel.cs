@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 using Nodify.WinUI.Experimental.Common;
 using Nodify.WinUI.Experimental.Model;
 using Windows.Foundation;
@@ -116,6 +117,10 @@ namespace Nodify.WinUI.Experimental.ViewModel
         public ObservableCollection<PortViewModel> InputPorts { get; }
         public ObservableCollection<PortViewModel> OutputPorts { get; }
 
+        public ICommand AddInputPortCommand { get; }
+        public ICommand AddOutputPortCommand { get; }
+        public ICommand RemovePortCommand { get; }
+
         public NodeViewModel(NodeModel model)
         {
             _model = model ?? throw new ArgumentNullException(nameof(model));
@@ -127,6 +132,10 @@ namespace Nodify.WinUI.Experimental.ViewModel
             OutputPorts = new ObservableCollection<PortViewModel>(
                 model.OutputPorts.Select(p => new PortViewModel(p) { ParentNode = this, NodeId = Id })
             );
+
+            AddInputPortCommand = new RelayCommand(() => AddInputPort($"Input {InputPorts.Count + 1}"));
+            AddOutputPortCommand = new RelayCommand(() => AddOutputPort($"Output {OutputPorts.Count + 1}"));
+            RemovePortCommand = new RelayCommand<PortViewModel>(RemovePort);
         }
 
         public void AddInputPort(string name, PortType type = PortType.Default)
@@ -141,6 +150,30 @@ namespace Nodify.WinUI.Experimental.ViewModel
             var portModel = new PortModel(name, PortDirection.Output, type) { NodeId = Id };
             _model.OutputPorts.Add(portModel);
             OutputPorts.Add(new PortViewModel(portModel) { ParentNode = this, NodeId = Id });
+        }
+
+        public void RemovePort(PortViewModel port)
+        {
+            if (port == null) return;
+
+            if (port.Direction == PortDirection.Input)
+            {
+                var model = _model.InputPorts.FirstOrDefault(p => p.Id == port.Id);
+                if (model != null)
+                {
+                    _model.InputPorts.Remove(model);
+                    InputPorts.Remove(port);
+                }
+            }
+            else
+            {
+                var model = _model.OutputPorts.FirstOrDefault(p => p.Id == port.Id);
+                if (model != null)
+                {
+                    _model.OutputPorts.Remove(model);
+                    OutputPorts.Remove(port);
+                }
+            }
         }
 
         public NodeModel GetModel() => _model;

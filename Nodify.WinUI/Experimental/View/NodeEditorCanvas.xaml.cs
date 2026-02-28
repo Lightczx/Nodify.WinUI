@@ -169,6 +169,16 @@ namespace Nodify.WinUI.Experimental.View
             var nodeControl = new NodeControl { DataContext = node };
             nodeControl.NodeMoved += (s, n) => ViewModel?.UpdateConnectionPositions();
             
+            // Subscribe to selection changes
+            node.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(NodeViewModel.IsSelected) && node.IsSelected)
+                {
+                    if (ViewModel != null)
+                        ViewModel.SelectedNode = node;
+                }
+            };
+            
             // Subscribe to port events
             nodeControl.Loaded += (s, e) =>
             {
@@ -349,7 +359,30 @@ namespace Nodify.WinUI.Experimental.View
             if (ViewModel != null)
             {
                 var position = e.GetPosition(MainCanvas);
-                ViewModel.AddNode(position);
+                
+                // Check if double-tapped on a node or connection
+                var originalSource = e.OriginalSource as DependencyObject;
+                bool isOverNode = false;
+                
+                // Walk up the visual tree to see if we're over a NodeControl
+                var current = originalSource;
+                while (current != null && current != MainCanvas)
+                {
+                    if (current is NodeControl)
+                    {
+                        isOverNode = true;
+                        break;
+                    }
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                
+                // Only create node if not over an existing node
+                if (!isOverNode)
+                {
+                    ViewModel.AddNode(position);
+                }
+                
+                e.Handled = true;
             }
         }
 

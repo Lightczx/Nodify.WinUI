@@ -23,9 +23,21 @@ namespace Nodify.WinUI.Experimental.Converters
             {
                 boolValue = b;
             }
+            else if (value != null)
+            {
+                // 对于非布尔值，null 为 false，非 null 为 true
+                boolValue = true;
+            }
+
+            // 检查参数是否要求反转
+            bool shouldInvert = IsInverted;
+            if (parameter is string paramStr && paramStr.Equals("Inverse", StringComparison.OrdinalIgnoreCase))
+            {
+                shouldInvert = true;
+            }
 
             // 如果启用反转，则翻转布尔值
-            if (IsInverted)
+            if (shouldInvert)
             {
                 boolValue = !boolValue;
             }

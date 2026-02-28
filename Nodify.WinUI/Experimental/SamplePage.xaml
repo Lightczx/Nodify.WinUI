@@ -10,10 +10,12 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:NullToBoolConverter x:Key="NullToBoolConverter"/>
     </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -29,9 +31,88 @@
                 Style="{ThemeResource TitleTextBlockStyle}"/>
         </Grid>
 
-        <!-- Node Editor -->
-        <view:NodeEditorCanvas 
-            x:Name="NodeEditor"
-            Grid.Row="1"/>
+        <!-- Toolbar -->
+        <Grid Grid.Row="1"
+              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+              Padding="12,8"
+              BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+              BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Add Node" 
+                        Command="{x:Bind NodeEditor.ViewModel.AddNodeCommand}"
+                        ToolTipService.ToolTip="Double-click canvas to add node">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Control"/>
+                    </Button.KeyboardAccelerators>
+                </Button>
+                
+                <Button Content="Delete Selected" 
+                        Command="{x:Bind NodeEditor.ViewModel.DeleteSelectedNodeCommand}"
+                        IsEnabled="{x:Bind NodeEditor.ViewModel.SelectedNode, Mode=OneWay, Converter={StaticResource NullToBoolConverter}}"
+                        ToolTipService.ToolTip="Delete selected node (Del)">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Delete"/>
+                    </Button.KeyboardAccelerators>
+                </Button>
+                
+                <Rectangle Width="1" 
+                          Fill="{ThemeResource ControlStrokeColorDefaultBrush}"
+                          Margin="4,0"/>
+                
+                <TextBlock Text="Zoom:" 
+                          VerticalAlignment="Center"
+                          Margin="4,0"/>
+                <TextBlock Text="{x:Bind NodeEditor.ViewModel.ViewportScale, Mode=OneWay}" 
+                          VerticalAlignment="Center"
+                          MinWidth="40"/>
+                
+                <Button Content="Reset Zoom" 
+                        Click="ResetZoom_Click"
+                        ToolTipService.ToolTip="Reset zoom to 100% (Ctrl+0)">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Number0" Modifiers="Control"/>
+                    </Button.KeyboardAccelerators>
+                </Button>
+                
+                <Rectangle Width="1" 
+                          Fill="{ThemeResource ControlStrokeColorDefaultBrush}"
+                          Margin="4,0"/>
+                
+                <TextBlock Text="{x:Bind NodeEditor.ViewModel.Nodes.Count, Mode=OneWay}" 
+                          VerticalAlignment="Center"/>
+                <TextBlock Text="Nodes" 
+                          VerticalAlignment="Center"
+                          Margin="0,0,12,0"/>
+                
+                <TextBlock Text="{x:Bind NodeEditor.ViewModel.Connections.Count, Mode=OneWay}" 
+                          VerticalAlignment="Center"/>
+                <TextBlock Text="Connections" 
+                          VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content with Properties Panel -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Node Editor -->
+            <view:NodeEditorCanvas 
+                x:Name="NodeEditor"
+                Grid.Column="0"/>
+
+            <!-- Splitter -->
+            <Rectangle Grid.Column="1"
+                      Width="1"
+                      Fill="{ThemeResource ControlStrokeColorDefaultBrush}"/>
+
+            <!-- Properties Panel -->
+            <view:PropertiesPanel 
+                Grid.Column="2"
+                DataContext="{x:Bind NodeEditor.ViewModel, Mode=OneWay}"/>
+        </Grid>
     </Grid>
 </Page>
