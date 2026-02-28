@@ -13,7 +13,4 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
-        <local:NodeEditorCanvas />
-    </Grid>
 </Window>

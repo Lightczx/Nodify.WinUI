@@ -1,0 +1,35 @@
+<UserControl
+    x:Class="Nodify.WinUI.Experimental.View.PortControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Width="16"
+    Height="16">
+
+    <Grid>
+        <Ellipse 
+            x:Name="PortEllipse"
+            Fill="{ThemeResource AccentFillColorDefaultBrush}"
+            Stroke="{ThemeResource ControlStrokeColorDefaultBrush}"
+            StrokeThickness="2"
+            Width="16"
+            Height="16"
+            PointerEntered="PortEllipse_PointerEntered"
+            PointerExited="PortEllipse_PointerExited"
+            PointerPressed="PortEllipse_PointerPressed"
+            PointerReleased="PortEllipse_PointerReleased"/>
+        
+        <ToolTipService.ToolTip>
+            <ToolTip>
+                <TextBlock>
+                    <Run Text="{Binding Name}"/>
+                    <Run Text=" ("/>
+                    <Run Text="{Binding Type}"/>
+                    <Run Text=")"/>
+                </TextBlock>
+            </ToolTip>
+        </ToolTipService.ToolTip>
+    </Grid>
+</UserControl>

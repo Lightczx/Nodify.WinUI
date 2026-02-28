@@ -16,7 +16,6 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Experimental\View\NodeEditorCanvas.xaml" />
     <None Remove="Themes\Brushes.xaml" />
     <None Remove="Themes\Controls.xaml" />
     <None Remove="Themes\Dark.xaml" />
@@ -70,9 +69,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Experimental\View\NodeEditorCanvas.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <Folder Include="Experimental\" />
   </ItemGroup>
 
   <!--

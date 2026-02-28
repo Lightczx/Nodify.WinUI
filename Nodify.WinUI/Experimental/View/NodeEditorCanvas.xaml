@@ -1,0 +1,123 @@
+<UserControl
+    x:Class="Nodify.WinUI.Experimental.View.NodeEditorCanvas"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:view="using:Nodify.WinUI.Experimental.View"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="GridLineBrush" Color="{ThemeResource SystemBaseLowColor}" Opacity="0.3"/>
+    </UserControl.Resources>
+
+    <Grid x:Name="RootGrid">
+        <!-- Background Grid Pattern -->
+        <Canvas x:Name="BackgroundCanvas" Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Canvas.RenderTransform>
+                <CompositeTransform x:Name="BackgroundTransform"/>
+            </Canvas.RenderTransform>
+        </Canvas>
+
+        <!-- Main Canvas with Transform -->
+        <Canvas x:Name="MainCanvas"
+                Background="Transparent"
+                PointerPressed="MainCanvas_PointerPressed"
+                PointerMoved="MainCanvas_PointerMoved"
+                PointerReleased="MainCanvas_PointerReleased"
+                PointerWheelChanged="MainCanvas_PointerWheelChanged"
+                DoubleTapped="MainCanvas_DoubleTapped">
+            
+            <Canvas.RenderTransform>
+                <CompositeTransform x:Name="CanvasTransform"/>
+            </Canvas.RenderTransform>
+
+            <!-- Connections Layer -->
+            <Canvas x:Name="ConnectionsCanvas" IsHitTestVisible="True"/>
+
+            <!-- Pending Connection -->
+            <view:ConnectionControl x:Name="PendingConnectionControl" Visibility="Collapsed"/>
+
+            <!-- Nodes Layer -->
+            <Canvas x:Name="NodesCanvas"/>
+        </Canvas>
+
+        <!-- MiniMap -->
+        <view:MiniMapControl
+            x:Name="MiniMap"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Margin="16"/>
+
+        <!-- Toolbar -->
+        <StackPanel
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="16"
+            Spacing="8"
+            Orientation="Horizontal">
+            
+            <Button Content="➕ Add Node" Click="AddNodeButton_Click">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <Button Content="🔍+" Click="ZoomInButton_Click">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Add" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <Button Content="🔍-" Click="ZoomOutButton_Click">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Subtract" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <Button Content="⟲ Reset View" Click="ResetViewButton_Click">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number0" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <Button Content="💾 Save" Click="SaveButton_Click">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <Button Content="📂 Load" Click="LoadButton_Click">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="O" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+        </StackPanel>
+
+        <!-- Status Bar -->
+        <Border
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            VerticalAlignment="Bottom"
+            Height="32">
+            <StackPanel Orientation="Horizontal" Spacing="16" Margin="16,0">
+                <TextBlock VerticalAlignment="Center">
+                    <Run Text="Nodes: "/>
+                    <Run Text="{Binding Nodes.Count}"/>
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center">
+                    <Run Text="Connections: "/>
+                    <Run Text="{Binding Connections.Count}"/>
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center">
+                    <Run Text="Zoom: "/>
+                    <Run Text="{Binding ViewportScale, StringFormat='{}{0:P0}'}"/>
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                    <Run Text="Pan: Middle Mouse | Zoom: Ctrl+Wheel | Connect: Drag from Port | Delete: Double-click Connection"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
