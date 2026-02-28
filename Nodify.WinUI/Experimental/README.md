@@ -2,6 +2,13 @@
 
 这是一个功能完整的 WinUI 3 节点编辑器控件实现，采用 MVVM 架构。
 
+> **💡 WinUI 3 特性说明**  
+> 本项目针对 WinUI 3 的特性进行了适配：
+> - 使用 `IValueConverter` 替代 WPF 的 `StringFormat`（如 `PercentageConverter`）
+> - 使用 `CompositeTransform` 实现平移和缩放
+> - 使用 WinUI 3 的文件选择器 API (`Windows.Storage.Pickers`)
+> - 完全兼容 WinUI 3 的主题系统
+
 ## 功能特性
 
 ### ✅ 已实现功能

@@ -5,10 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:view="using:Nodify.WinUI.Experimental.View"
+    xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="GridLineBrush" Color="{ThemeResource SystemBaseLowColor}" Opacity="0.3"/>
+        <converters:PercentageConverter x:Key="PercentageConverter"/>
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid">
@@ -112,7 +114,7 @@
                 </TextBlock>
                 <TextBlock VerticalAlignment="Center">
                     <Run Text="Zoom: "/>
-                    <Run Text="{Binding ViewportScale, StringFormat='{}{0:P0}'}"/>
+                    <Run Text="{Binding ViewportScale, Converter={StaticResource PercentageConverter}}"/>
                 </TextBlock>
                 <TextBlock VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                     <Run Text="Pan: Middle Mouse | Zoom: Ctrl+Wheel | Connect: Drag from Port | Delete: Double-click Connection"/>

@@ -4,9 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
     mc:Ignorable="d"
     Width="200"
     Height="150">
+
+    <UserControl.Resources>
+        <converters:PercentageConverter x:Key="PercentageConverter"/>
+    </UserControl.Resources>
 
     <Grid>
         <Border
@@ -35,7 +40,7 @@
 
         <!-- Zoom info -->
         <TextBlock
-            Text="{Binding ViewportScale, StringFormat='Zoom: {0:P0}'}"
+            Text="{Binding ViewportScale, Converter={StaticResource PercentageConverter}}"
             FontSize="10"
             Margin="8,4"
             VerticalAlignment="Bottom"

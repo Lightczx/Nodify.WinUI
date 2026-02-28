@@ -444,18 +444,8 @@ namespace Nodify.WinUI.Experimental.View
 
         private Window GetWindow()
         {
+            // In WinUI 3, get the window from App
             var window = (Application.Current as App)?.m_window;
-            if (window == null)
-            {
-                // Fallback: try to find window from visual tree
-                var parent = this.XamlRoot?.Content;
-                while (parent != null)
-                {
-                    if (parent is Window w)
-                        return w;
-                    parent = VisualTreeHelper.GetParent(parent as DependencyObject) as FrameworkElement;
-                }
-            }
             return window;
         }
     }
