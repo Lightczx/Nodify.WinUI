@@ -125,10 +125,16 @@ namespace Nodify.WinUI.Experimental.ViewModel
             if (port.Direction == PortDirection.Output)
             {
                 PendingConnection.SourcePort = port;
+                // Initialize points immediately
+                PendingConnection.SourcePoint = port.Position;
+                PendingConnection.TargetPoint = port.Position; // Start at the same position
             }
             else
             {
                 PendingConnection.TargetPort = port;
+                // Initialize points immediately
+                PendingConnection.SourcePoint = port.Position; // Start at the same position
+                PendingConnection.TargetPoint = port.Position;
             }
         }
 

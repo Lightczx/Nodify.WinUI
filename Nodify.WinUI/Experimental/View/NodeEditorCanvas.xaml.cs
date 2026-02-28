@@ -74,7 +74,7 @@ namespace Nodify.WinUI.Experimental.View
 
             for (int x = -gridExtent; x <= gridExtent; x += gridSize)
             {
-                var line = new Windows.UI.Xaml.Shapes.Line
+                var line = new Microsoft.UI.Xaml.Shapes.Line
                 {
                     X1 = x,
                     Y1 = -gridExtent,
@@ -88,7 +88,7 @@ namespace Nodify.WinUI.Experimental.View
 
             for (int y = -gridExtent; y <= gridExtent; y += gridSize)
             {
-                var line = new Windows.UI.Xaml.Shapes.Line
+                var line = new Microsoft.UI.Xaml.Shapes.Line
                 {
                     X1 = -gridExtent,
                     Y1 = y,
@@ -348,7 +348,7 @@ namespace Nodify.WinUI.Experimental.View
         {
             if (ViewModel != null)
             {
-                var position = e.GetCurrentPoint(MainCanvas).Position;
+                var position = e.GetPosition(MainCanvas);
                 ViewModel.AddNode(position);
             }
         }

@@ -43,11 +43,25 @@ namespace Nodify.WinUI.Experimental.View
         {
             if (ViewModel == null) return;
 
-            var geometry = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
-            ConnectionPath.Data = geometry;
-            SelectionPath.Data = geometry;
+            // Validate points before creating geometry
+            if (!IsValidPoint(ViewModel.SourcePoint) || !IsValidPoint(ViewModel.TargetPoint))
+            {
+                // Don't update path with invalid points
+                return;
+            }
+
+            // In WinUI 3, each Path needs its own Geometry instance
+            ConnectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+            SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
 
             SelectionPath.Visibility = ViewModel.IsSelected ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private bool IsValidPoint(Point point)
+        {
+            // Check for NaN, Infinity, or invalid values
+            return !double.IsNaN(point.X) && !double.IsNaN(point.Y) &&
+                   !double.IsInfinity(point.X) && !double.IsInfinity(point.Y);
         }
 
         private Geometry CreateBezierGeometry(Point start, Point end)

@@ -135,7 +135,135 @@ if (file != null)
 
 ---
 
-### 6. 🪟 Window 类型层次结构
+### 6. 🔲 BoolToVisibilityConverter 不是内置转换器
+
+**WPF/UWP：**
+```xml
+<!-- BooleanToVisibilityConverter 是内置的 -->
+<Window.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+</Window.Resources>
+
+<Border Visibility="{Binding IsSelected, Converter={StaticResource BoolToVis}}"/>
+```
+
+**WinUI 3：**
+```xml
+<!-- 没有内置转换器，需要自己创建 -->
+<UserControl.Resources>
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+</UserControl.Resources>
+
+<Border Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
+```
+
+**解决方案：**
+- 创建了 `BoolToVisibilityConverter` 类
+- 位置：`Experimental/Converters/BoolToVisibilityConverter.cs`
+- 功能：
+  - 将 `true` 转换为 `Visibility.Visible`
+  - 将 `false` 转换为 `Visibility.Collapsed`
+  - 支持反转逻辑（`IsInverted` 属性）
+- 使用场景：
+  - `NodeControl.xaml` - 节点选中状态边框显示
+
+**实现代码：**
+```csharp
+public class BoolToVisibilityConverter : IValueConverter
+{
+    public bool IsInverted { get; set; }
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool boolValue = value is bool b && b;
+        if (IsInverted) boolValue = !boolValue;
+        return boolValue ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        if (value is Visibility visibility)
+        {
+            bool result = visibility == Visibility.Visible;
+            return IsInverted ? !result : result;
+        }
+        return false;
+    }
+}
+```
+
+---
+
+### 8. 🔥 Geometry 对象不能共享
+
+**重要发现：这是运行时错误的主要原因！**
+
+**WPF：**
+```csharp
+// ✅ 允许：同一个 Geometry 可以赋值给多个 Path
+var geometry = CreateGeometry();
+Path1.Data = geometry;
+Path2.Data = geometry;  // WPF 中这样做没问题
+```
+
+**WinUI 3：**
+```csharp
+// ❌ 错误：同一个 Geometry 不能赋值给多个 Path
+var geometry = CreateGeometry();
+Path1.Data = geometry;  // ✅ 第一次赋值成功
+Path2.Data = geometry;  // ❌ 抛出 ArgumentException: "Value does not fall within the expected range"
+
+// ✅ 正确：每个 Path 需要独立的 Geometry 实例
+Path1.Data = CreateGeometry();
+Path2.Data = CreateGeometry();
+```
+
+**错误信息：**
+```
+System.ArgumentException
+HResult=0x80070057
+Message=Value does not fall within the expected range.
+at Path.set_Data(Geometry value)
+```
+
+**本项目修复：**
+
+在 `ConnectionControl.xaml.cs` 中：
+```csharp
+private void UpdatePath()
+{
+    if (ViewModel == null) return;
+    
+    if (!IsValidPoint(ViewModel.SourcePoint) || !IsValidPoint(ViewModel.TargetPoint))
+        return;
+
+    // ❌ 原始错误代码
+    // var geometry = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+    // ConnectionPath.Data = geometry;
+    // SelectionPath.Data = geometry;  // 💥 崩溃！
+
+    // ✅ 修复后的代码：为每个 Path 创建独立实例
+    ConnectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+    SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+
+    SelectionPath.Visibility = ViewModel.IsSelected ? Visibility.Visible : Visibility.Collapsed;
+}
+```
+
+**性能考虑：**
+- 创建两个几何对象确实会增加一点内存开销
+- 但这是 WinUI 3 的硬性要求，无法避免
+- 在实际应用中，性能影响可以忽略不计
+
+**设计模式建议：**
+如果需要频繁创建复杂几何图形，可以考虑：
+1. **对象池模式**：复用几何对象
+2. **延迟创建**：只在需要时创建
+3. **缓存策略**：缓存不变的几何数据
+
+---
+
+### 9. 🪟 Window 类型层次结构
 
 **WPF：**
 - `Window` 继承自 `ContentControl` → `Control` → `FrameworkElement` → `UIElement`
@@ -202,7 +330,18 @@ error CS8121: "Window"类型的模式无法处理"UIElement"类型的表达式
 - 直接使用 `App.m_window` 获取窗口引用
 - 修改文件：`NodeEditorCanvas.xaml.cs`（第 445-450 行）
 
-#### 错误 4: 缺少 `using System;` 指令
+#### 错误 4: `BoolToVisibilityConverter` 资源未找到
+```
+Microsoft.UI.Xaml.Markup.XamlParseException
+Cannot find a Resource with the Name/Key BoolToVisibilityConverter
+```
+
+**解决方案：**
+1. 创建 `BoolToVisibilityConverter.cs`
+2. 在 `NodeControl.xaml` 中添加命名空间和资源定义
+3. 在 `SamplePage.xaml` 中添加资源定义（如需要）
+
+#### 错误 5: 缺少 `using System;` 指令
 ```
 error CS0246: 未能找到类型或命名空间名"EventHandler<>"
 ```

@@ -12,7 +12,10 @@ Experimental/
 │   ├── TESTING_CHECKLIST.md ......... 90+ 项功能测试清单
 │   ├── WINUI3_COMPATIBILITY.md ...... WinUI 3 兼容性说明
 │   ├── COMPILATION_FIXES.md ......... 编译错误修复记录 🔧
-│   ├── FIXES_QUICK_REFERENCE.md ..... 修复快速参考 🆕
+│   ├── RUNTIME_FIXES.md ............. 运行时错误修复记录 🆕
+│   ├── TROUBLESHOOTING.md ........... 常见问题排查指南 🆕
+│   ├── CONVERTERS_REFERENCE.md ...... 转换器参考文档 🆕
+│   ├── FIXES_QUICK_REFERENCE.md ..... 修复快速参考
 │   └── INDEX.md ..................... 本文件（导航索引）
 │
 ├── 📁 Common/ ....................... MVVM 基础设施
@@ -42,7 +45,7 @@ Experimental/
 │   └── SerializationHelper.cs ....... JSON 序列化助手
 │
 ├── 📁 Converters/ ................... 值转换器
-│   ├── BoolToVisibilityConverter.cs . 布尔到可见性转换
+│   ├── BoolToVisibilityConverter.cs . 布尔到可见性转换 🆕
 │   └── PercentageConverter.cs ....... 数值到百分比字符串 (WinUI 3)
 │
 └── 📁 示例

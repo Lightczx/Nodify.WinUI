@@ -157,6 +157,72 @@ private Window GetWindow()
 
 ---
 
+### ✅ 问题 4: 缺少 BoolToVisibilityConverter
+
+**错误信息：**
+```
+Microsoft.UI.Xaml.Markup.XamlParseException
+  HResult=0x802B000A
+  Message=Cannot find a Resource with the Name/Key BoolToVisibilityConverter [Line: 43 Position: 13]
+```
+
+**原因：**
+- WinUI 3 没有内置的 `BoolToVisibilityConverter`
+- 这是 WPF 和 UWP 中的内置转换器，但 WinUI 3 移除了它
+- XAML 中使用了 `{StaticResource BoolToVisibilityConverter}` 但没有定义
+
+**解决方案：**
+
+1. **创建了 BoolToVisibilityConverter 转换器：**
+   - 文件：`Experimental/Converters/BoolToVisibilityConverter.cs`
+   - 功能：将 bool 值转换为 Visibility 枚举
+   - 支持反转逻辑（IsInverted 属性）
+
+2. **修改了 NodeControl.xaml：**
+   ```xml
+   <!-- 添加命名空间 -->
+   xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
+   
+   <!-- 在 UserControl.Resources 中添加 -->
+   <UserControl.Resources>
+       <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+       <!-- ... -->
+   </UserControl.Resources>
+   ```
+
+3. **已经在 SamplePage.xaml 中定义（之前已存在）**
+
+**转换器实现：**
+```csharp
+public class BoolToVisibilityConverter : IValueConverter
+{
+    public bool IsInverted { get; set; }
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool boolValue = value is bool b && b;
+        if (IsInverted) boolValue = !boolValue;
+        return boolValue ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        if (value is Visibility visibility)
+        {
+            bool result = visibility == Visibility.Visible;
+            return IsInverted ? !result : result;
+        }
+        return false;
+    }
+}
+```
+
+**涉及文件：**
+- ✅ `Experimental/Converters/BoolToVisibilityConverter.cs` (新建)
+- ✅ `Experimental/View/NodeControl.xaml` (修改)
+
+---
+
 ## 📊 修复统计
 
 | 问题类型 | 文件数量 | 状态 |
@@ -164,7 +230,8 @@ private Window GetWindow()
 | StringFormat 不支持 | 3 个文件 (1新建 + 2修改) | ✅ 已修复 |
 | 缺少 using 指令 | 3 个文件 | ✅ 已修复 |
 | Window 类型匹配 | 1 个文件 | ✅ 已修复 |
-| **总计** | **7 个文件** | **✅ 全部修复** |
+| BoolToVisibility 缺失 | 2 个文件 (1新建 + 1修改) | ✅ 已修复 |
+| **总计** | **9 个文件** | **✅ 全部修复** |
 
 ---
 
@@ -175,8 +242,9 @@ private Window GetWindow()
 ❌ 3 个 XAML 编译错误
 ❌ 3 个 C# 类型错误  
 ❌ 1 个模式匹配错误
+❌ 1 个运行时资源错误
 ---------------------------
-❌ 总计 7 个编译错误
+❌ 总计 8 个错误
 ```
 
 ### 修复后（成功编译）
@@ -184,8 +252,9 @@ private Window GetWindow()
 ✅ 0 个 XAML 编译错误
 ✅ 0 个 C# 类型错误
 ✅ 0 个模式匹配错误
+✅ 0 个运行时资源错误
 ---------------------------
-✅ 编译成功，无警告
+✅ 编译成功，运行正常
 ```
 
 ---
@@ -233,7 +302,7 @@ namespace Nodify.WinUI.Experimental.View
 
 考虑创建一个通用转换器集合：
 - `PercentageConverter` ✅ (已创建)
-- `BoolToVisibilityConverter`
+- `BoolToVisibilityConverter` ✅ (已创建)
 - `StringFormatConverter`
 - `NullToVisibilityConverter`
 
