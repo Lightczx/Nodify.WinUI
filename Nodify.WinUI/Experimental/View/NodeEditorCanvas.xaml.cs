@@ -400,6 +400,13 @@ public sealed partial class NodeEditorCanvas : UserControl
         double newScale = ViewModel.ViewportScale * zoomFactor;
         newScale = Math.Max(0.1, Math.Min(5.0, newScale));
 
+        // Snap to 100% when close (within 5% range)
+        const double snapThreshold = 0.05; // 5% threshold
+        if (Math.Abs(newScale - 1.0) < snapThreshold && Math.Abs(ViewModel.ViewportScale - 1.0) >= snapThreshold)
+        {
+            newScale = 1.0;
+        }
+
         // Adjust offset to zoom toward mouse position
         double scaleChange = newScale / ViewModel.ViewportScale;
         ViewModel.ViewportOffsetX = mousePos.X - (mousePos.X - ViewModel.ViewportOffsetX) * scaleChange;
