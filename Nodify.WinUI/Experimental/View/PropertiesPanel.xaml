@@ -9,8 +9,8 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <cwc:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter"/>
+        <converters:EmptyObjectToVisibilityConverter x:Key="EmptyObjectToVisibilityConverter"/>
+        <converters:EmptyObjectToVisibilityInverseConverter x:Key="EmptyObjectToVisibilityInverseConverter"/>
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Background="{ThemeResource LayerFillColorDefaultBrush}">
@@ -18,7 +18,7 @@
             <StackPanel
                 Padding="16"
                 Spacing="16"
-                Visibility="{Binding SelectedNode, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding SelectedNode, Converter={StaticResource EmptyObjectToVisibilityConverter}}">
 
                 <!-- Header -->
                 <TextBlock
@@ -157,7 +157,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="8"
-            Visibility="{Binding SelectedNode, Converter={StaticResource BoolToVisibilityInverseConverter}}">
+            Visibility="{Binding SelectedNode, Converter={StaticResource EmptyObjectToVisibilityInverseConverter}}">
             <FontIcon
                 Glyph="&#xE946;"
                 FontSize="48"

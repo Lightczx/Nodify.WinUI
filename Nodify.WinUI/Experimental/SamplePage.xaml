@@ -111,7 +111,7 @@
             <!-- Properties Panel -->
             <view:PropertiesPanel
                 Grid.Column="2"
-                DataContext="{x:Bind NodeEditor.ViewModel, Mode=OneWay}"/>
+                DataContext="{x:Bind NodeEditor.DataContext, Mode=OneWay}"/>
         </Grid>
     </Grid>
 </Page>

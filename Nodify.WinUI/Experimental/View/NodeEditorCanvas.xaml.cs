@@ -220,9 +220,9 @@ public sealed partial class NodeEditorCanvas : UserControl
             return;
         }
 
-        if (e.PropertyName is nameof(NodeViewModel.IsSelected) && node.IsSelected)
+        if (e.PropertyName is nameof(NodeViewModel.IsSelected) && node.IsSelected && ViewModel?.SelectedNode != node)
         {
-            ViewModel?.SelectedNode = node;
+            ViewModel.SelectedNode = node;
         }
     }
 
@@ -322,16 +322,26 @@ public sealed partial class NodeEditorCanvas : UserControl
     {
         PointerPoint? pointer = e.GetCurrentPoint(this);
 
-        if (!pointer.Properties.IsMiddleButtonPressed)
+        if (pointer.Properties.IsMiddleButtonPressed)
         {
-            return;
+            isPanning = true;
+            panStartPoint = pointer.Position;
+            panStartOffset = new(ViewModel?.ViewportOffsetX ?? 0, ViewModel?.ViewportOffsetY ?? 0);
+            MainCanvas.CapturePointer(e.Pointer);
+            e.Handled = true;
         }
-
-        isPanning = true;
-        panStartPoint = pointer.Position;
-        panStartOffset = new(ViewModel?.ViewportOffsetX ?? 0, ViewModel?.ViewportOffsetY ?? 0);
-        MainCanvas.CapturePointer(e.Pointer);
-        e.Handled = true;
+        else if (pointer.Properties.IsLeftButtonPressed)
+        {
+            // Check if clicked on canvas background (not on a node or connection)
+            if (e.OriginalSource == MainCanvas || e.OriginalSource == sender)
+            {
+                // Deselect current node when clicking on empty canvas
+                if (ViewModel?.SelectedNode != null)
+                {
+                    ViewModel.SelectedNode = null;
+                }
+            }
+        }
     }
 
     private void OnMainCanvasPointerMoved(object sender, PointerRoutedEventArgs e)

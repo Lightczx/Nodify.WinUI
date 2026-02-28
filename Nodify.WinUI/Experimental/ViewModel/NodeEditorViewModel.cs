@@ -56,25 +56,28 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsPanning { get; set; }
 
-    public NodeViewModel? SelectedNode
+    [ObservableProperty]
+    public partial NodeViewModel? SelectedNode { get; set; }
+
+    partial void OnSelectedNodeChanging(NodeViewModel? value)
     {
-        get;
-        set
+        // Deselect the old node
+        if (SelectedNode != null)
         {
-            if (field == value)
-            {
-                return;
-            }
-
-            field?.IsSelected = false;
-
-            SetProperty(ref field, value);
-
-            field?.IsSelected = true;
-
-            // Notify commands that depend on selected node
-            (DeleteSelectedNodeCommand as RelayCommand)?.NotifyCanExecuteChanged();
+            SelectedNode.IsSelected = false;
         }
+    }
+
+    partial void OnSelectedNodeChanged(NodeViewModel? value)
+    {
+        // Select the new node
+        if (value != null)
+        {
+            value.IsSelected = true;
+        }
+
+        // Notify commands that depend on selected node
+        (DeleteSelectedNodeCommand as RelayCommand)?.NotifyCanExecuteChanged();
     }
 
     public ICommand AddNodeCommand { get; }

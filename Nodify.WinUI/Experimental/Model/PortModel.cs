@@ -12,7 +12,7 @@ public class PortModel
     public Guid Id { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
 
     [JsonPropertyName("direction")]
     public PortDirection Direction { get; set; }
