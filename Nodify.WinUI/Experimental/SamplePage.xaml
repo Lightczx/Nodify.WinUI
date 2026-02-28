@@ -9,8 +9,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:NullToBoolConverter x:Key="NullToBoolConverter"/>
+        <converters:EmptyObjectToBoolConverter x:Key="EmptyObjectToBoolConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -21,12 +20,12 @@
         </Grid.RowDefinitions>
 
         <!-- Title Bar -->
-        <Grid Grid.Row="0" 
+        <Grid Grid.Row="0"
               Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
               Padding="16,12"
               BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
               BorderThickness="0,0,0,1">
-            <TextBlock 
+            <TextBlock
                 Text="Node Editor - Experimental"
                 Style="{ThemeResource TitleTextBlockStyle}"/>
         </Grid>
@@ -38,55 +37,55 @@
               BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
               BorderThickness="0,0,0,1">
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Add Node" 
+                <Button Content="Add Node"
                         Command="{x:Bind NodeEditor.ViewModel.AddNodeCommand}"
                         ToolTipService.ToolTip="Double-click canvas to add node">
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="N" Modifiers="Control"/>
                     </Button.KeyboardAccelerators>
                 </Button>
-                
-                <Button Content="Delete Selected" 
+
+                <Button Content="Delete Selected"
                         Command="{x:Bind NodeEditor.ViewModel.DeleteSelectedNodeCommand}"
-                        IsEnabled="{x:Bind NodeEditor.ViewModel.SelectedNode, Mode=OneWay, Converter={StaticResource NullToBoolConverter}}"
+                        IsEnabled="{x:Bind NodeEditor.ViewModel.SelectedNode, Mode=OneWay, Converter={StaticResource EmptyObjectToBoolConverter}}"
                         ToolTipService.ToolTip="Delete selected node (Del)">
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="Delete"/>
                     </Button.KeyboardAccelerators>
                 </Button>
-                
-                <Rectangle Width="1" 
+
+                <Rectangle Width="1"
                           Fill="{ThemeResource ControlStrokeColorDefaultBrush}"
                           Margin="4,0"/>
-                
-                <TextBlock Text="Zoom:" 
+
+                <TextBlock Text="Zoom:"
                           VerticalAlignment="Center"
                           Margin="4,0"/>
-                <TextBlock Text="{x:Bind NodeEditor.ViewModel.ViewportScale, Mode=OneWay}" 
+                <TextBlock Text="{x:Bind NodeEditor.ViewModel.ViewportScale, Mode=OneWay}"
                           VerticalAlignment="Center"
                           MinWidth="40"/>
-                
-                <Button Content="Reset Zoom" 
-                        Click="ResetZoom_Click"
+
+                <Button Content="Reset Zoom"
+                        Click="OnResetZoomClick"
                         ToolTipService.ToolTip="Reset zoom to 100% (Ctrl+0)">
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="Number0" Modifiers="Control"/>
                     </Button.KeyboardAccelerators>
                 </Button>
-                
-                <Rectangle Width="1" 
+
+                <Rectangle Width="1"
                           Fill="{ThemeResource ControlStrokeColorDefaultBrush}"
                           Margin="4,0"/>
-                
-                <TextBlock Text="{x:Bind NodeEditor.ViewModel.Nodes.Count, Mode=OneWay}" 
+
+                <TextBlock Text="{x:Bind NodeEditor.ViewModel.Nodes.Count, Mode=OneWay}"
                           VerticalAlignment="Center"/>
-                <TextBlock Text="Nodes" 
+                <TextBlock Text="Nodes"
                           VerticalAlignment="Center"
                           Margin="0,0,12,0"/>
-                
-                <TextBlock Text="{x:Bind NodeEditor.ViewModel.Connections.Count, Mode=OneWay}" 
+
+                <TextBlock Text="{x:Bind NodeEditor.ViewModel.Connections.Count, Mode=OneWay}"
                           VerticalAlignment="Center"/>
-                <TextBlock Text="Connections" 
+                <TextBlock Text="Connections"
                           VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
@@ -100,7 +99,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Node Editor -->
-            <view:NodeEditorCanvas 
+            <view:NodeEditorCanvas
                 x:Name="NodeEditor"
                 Grid.Column="0"/>
 
@@ -110,7 +109,7 @@
                       Fill="{ThemeResource ControlStrokeColorDefaultBrush}"/>
 
             <!-- Properties Panel -->
-            <view:PropertiesPanel 
+            <view:PropertiesPanel
                 Grid.Column="2"
                 DataContext="{x:Bind NodeEditor.ViewModel, Mode=OneWay}"/>
         </Grid>

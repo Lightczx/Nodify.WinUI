@@ -33,9 +33,9 @@
                 StrokeThickness="2"
                 Fill="{ThemeResource AccentFillColorDefaultBrush}"
                 Opacity="0.3"
-                PointerPressed="ViewportRect_PointerPressed"
-                PointerMoved="ViewportRect_PointerMoved"
-                PointerReleased="ViewportRect_PointerReleased"/>
+                PointerPressed="OnViewportRectPointerPressed"
+                PointerMoved="OnViewportRectPointerMoved"
+                PointerReleased="OnViewportRectPointerReleased"/>
         </Canvas>
 
         <!-- Zoom info -->

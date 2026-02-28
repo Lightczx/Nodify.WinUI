@@ -1,306 +1,297 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using Nodify.WinUI.Experimental.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Nodify.WinUI.Experimental.Model;
 using Windows.Foundation;
 
-namespace Nodify.WinUI.Experimental.ViewModel
+namespace Nodify.WinUI.Experimental.ViewModel;
+
+/// <summary>
+/// Main ViewModel for the Node Editor
+/// </summary>
+public sealed partial class NodeEditorViewModel : ObservableObject
 {
-    /// <summary>
-    /// Main ViewModel for the Node Editor
-    /// </summary>
-    public class NodeEditorViewModel : ObservableObject
+    public NodeEditorViewModel()
     {
-        private double _viewportOffsetX;
-        private double _viewportOffsetY;
-        private double _viewportScale = 1.0;
-        private ConnectionViewModel _pendingConnection;
-        private bool _isPanning;
-        private NodeViewModel _selectedNode;
+        Nodes = new ObservableCollection<NodeViewModel>();
+        Connections = new ObservableCollection<ConnectionViewModel>();
 
-        public ObservableCollection<NodeViewModel> Nodes { get; }
-        public ObservableCollection<ConnectionViewModel> Connections { get; }
+        AddNodeCommand = new RelayCommand<Point>(AddNode);
+        DeleteNodeCommand = new RelayCommand<NodeViewModel>(DeleteNode);
+        DeleteSelectedNodeCommand = new RelayCommand(DeleteSelectedNode, () => SelectedNode != null);
+        DeleteConnectionCommand = new RelayCommand<ConnectionViewModel>(DeleteConnection);
+        ZoomInCommand = new RelayCommand(() => ViewportScale *= 1.2);
+        ZoomOutCommand = new RelayCommand(() => ViewportScale /= 1.2);
+        ResetViewCommand = new RelayCommand(ResetView);
+    }
 
-        public double ViewportOffsetX
+    public ObservableCollection<NodeViewModel> Nodes { get; }
+    public ObservableCollection<ConnectionViewModel> Connections { get; }
+
+    [ObservableProperty]
+    public partial double ViewportOffsetX { get; set; }
+
+    [ObservableProperty]
+    public partial double ViewportOffsetY { get; set; }
+
+    public double ViewportScale
+    {
+        get;
+        set
         {
-            get => _viewportOffsetX;
-            set => SetProperty(ref _viewportOffsetX, value);
-        }
-
-        public double ViewportOffsetY
-        {
-            get => _viewportOffsetY;
-            set => SetProperty(ref _viewportOffsetY, value);
-        }
-
-        public double ViewportScale
-        {
-            get => _viewportScale;
-            set
+            if (value is > 0.1 and < 5.0)
             {
-                if (value > 0.1 && value < 5.0)
+                SetProperty(ref field, value);
+            }
+        }
+    } = 1.0;
+
+    [ObservableProperty]
+    public partial ConnectionViewModel? PendingConnection { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsPanning { get; set; }
+
+    public NodeViewModel? SelectedNode
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field?.IsSelected = false;
+
+            SetProperty(ref field, value);
+
+            field?.IsSelected = true;
+
+            // Notify commands that depend on selected node
+            (DeleteSelectedNodeCommand as RelayCommand)?.NotifyCanExecuteChanged();
+        }
+    }
+
+    public ICommand AddNodeCommand { get; }
+    public ICommand DeleteNodeCommand { get; }
+    public ICommand DeleteSelectedNodeCommand { get; }
+    public ICommand DeleteConnectionCommand { get; }
+    public ICommand ZoomInCommand { get; }
+    public ICommand ZoomOutCommand { get; }
+    public ICommand ResetViewCommand { get; }
+
+    public void AddNode(Point position)
+    {
+        NodeModel model = NodeModel.Create($"Node {Nodes.Count + 1}", string.Empty, position.X, position.Y);
+        NodeViewModel viewModel = new(model);
+
+        // Add some default ports
+        viewModel.AddInputPort("Input 1");
+        viewModel.AddOutputPort("Output 1");
+
+        Nodes.Add(viewModel);
+    }
+
+    public void DeleteNode(NodeViewModel? node)
+    {
+        if (node is null)
+        {
+            return;
+        }
+
+        // Remove all connections to this node
+        List<ConnectionViewModel> connectionsToRemove = Connections
+            .Where(c => c.SourcePort?.ParentNode == node || c.TargetPort?.ParentNode == node)
+            .ToList();
+
+        foreach (ConnectionViewModel connection in connectionsToRemove)
+        {
+            Connections.Remove(connection);
+        }
+
+        // Clear selection if this node is selected
+        if (SelectedNode == node)
+        {
+            SelectedNode = null;
+        }
+
+        Nodes.Remove(node);
+    }
+
+    public void DeleteSelectedNode()
+    {
+        if (SelectedNode != null)
+        {
+            DeleteNode(SelectedNode);
+        }
+    }
+
+    public void DeleteConnection(ConnectionViewModel? connection)
+    {
+        if (connection is not null)
+        {
+            Connections.Remove(connection);
+        }
+    }
+
+    public void StartConnection(PortViewModel? port)
+    {
+        if (port is null)
+        {
+            return;
+        }
+
+        ConnectionModel model = ConnectionModel.Create();
+        PendingConnection = new(model);
+
+        if (port.Direction == PortDirection.Output)
+        {
+            PendingConnection.SourcePort = port;
+        }
+        else
+        {
+            PendingConnection.TargetPort = port;
+        }
+
+        PendingConnection.SourcePoint = port.Position;
+        PendingConnection.TargetPoint = port.Position; // Start at the same position
+    }
+
+    public void UpdatePendingConnection(Point point)
+    {
+        if (PendingConnection is null)
+        {
+            return;
+        }
+
+        if (PendingConnection.SourcePort is not null)
+        {
+            PendingConnection.SourcePoint = PendingConnection.SourcePort.Position;
+            PendingConnection.TargetPoint = point;
+        }
+        else if (PendingConnection.TargetPort is not null)
+        {
+            PendingConnection.SourcePoint = point;
+            PendingConnection.TargetPoint = PendingConnection.TargetPort.Position;
+        }
+    }
+
+    public void CompleteConnection(PortViewModel? port)
+    {
+        if (PendingConnection is null || port is null)
+        {
+            return;
+        }
+
+        // Validate connection
+        PortViewModel? sourcePort = null;
+        PortViewModel? targetPort = null;
+
+        if (PendingConnection.SourcePort is not null && port.Direction == PortDirection.Input)
+        {
+            sourcePort = PendingConnection.SourcePort;
+            targetPort = port;
+        }
+        else if (PendingConnection.TargetPort is not null && port.Direction == PortDirection.Output)
+        {
+            sourcePort = port;
+            targetPort = PendingConnection.TargetPort;
+        }
+
+        // Prevent connecting to the same node
+        if (sourcePort is not null && targetPort is not null && sourcePort.ParentNode != targetPort.ParentNode)
+        {
+            // Check if connection already exists
+            bool exists = Connections.Any(c => c.SourcePort == sourcePort && c.TargetPort == targetPort);
+
+            if (!exists)
+            {
+                ConnectionViewModel connection = new(sourcePort, targetPort);
+                connection.UpdatePoints();
+                Connections.Add(connection);
+            }
+        }
+
+        PendingConnection = null;
+    }
+
+    public void CancelConnection()
+    {
+        PendingConnection = null;
+    }
+
+    public void UpdateConnectionPositions()
+    {
+        foreach (ConnectionViewModel connection in Connections)
+        {
+            connection.UpdatePoints();
+        }
+    }
+
+    private void ResetView()
+    {
+        ViewportOffsetX = 0;
+        ViewportOffsetY = 0;
+        ViewportScale = 1.0;
+    }
+
+    public EditorStateModel GetEditorState()
+    {
+        return EditorStateModel.Create(
+            Nodes.Select(n => n.GetModel()).ToList(),
+            Connections.Select(c => c.GetModel()).ToList(),
+            ViewportOffsetX,
+            ViewportOffsetY,
+            ViewportScale);
+    }
+
+    public void LoadEditorState(EditorStateModel? state)
+    {
+        if (state is null)
+        {
+            return;
+        }
+
+        Nodes.Clear();
+        Connections.Clear();
+
+        // Load nodes
+        List<NodeViewModel> nodeViewModels = state.Nodes.Select(n => new NodeViewModel(n)).ToList();
+        foreach (NodeViewModel node in nodeViewModels)
+        {
+            Nodes.Add(node);
+        }
+
+        // Load connections
+        foreach (ConnectionModel connectionModel in state.Connections)
+        {
+            NodeViewModel? sourceNode = nodeViewModels.FirstOrDefault(n => n.Id == connectionModel.SourceNodeId);
+            NodeViewModel? targetNode = nodeViewModels.FirstOrDefault(n => n.Id == connectionModel.TargetNodeId);
+
+            if (sourceNode != null && targetNode != null)
+            {
+                PortViewModel? sourcePort = sourceNode.OutputPorts.FirstOrDefault(p => p.Id == connectionModel.SourcePortId);
+                PortViewModel? targetPort = targetNode.InputPorts.FirstOrDefault(p => p.Id == connectionModel.TargetPortId);
+
+                if (sourcePort != null && targetPort != null)
                 {
-                    SetProperty(ref _viewportScale, value);
-                }
-            }
-        }
-
-        public ConnectionViewModel PendingConnection
-        {
-            get => _pendingConnection;
-            set => SetProperty(ref _pendingConnection, value);
-        }
-
-        public bool IsPanning
-        {
-            get => _isPanning;
-            set => SetProperty(ref _isPanning, value);
-        }
-
-        public NodeViewModel SelectedNode
-        {
-            get => _selectedNode;
-            set
-            {
-                if (_selectedNode != value)
-                {
-                    if (_selectedNode != null)
-                        _selectedNode.IsSelected = false;
-                    
-                    SetProperty(ref _selectedNode, value);
-                    
-                    if (_selectedNode != null)
-                        _selectedNode.IsSelected = true;
-                    
-                    // Notify commands that depend on selected node
-                    (DeleteSelectedNodeCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        public ICommand AddNodeCommand { get; }
-        public ICommand DeleteNodeCommand { get; }
-        public ICommand DeleteSelectedNodeCommand { get; }
-        public ICommand DeleteConnectionCommand { get; }
-        public ICommand ZoomInCommand { get; }
-        public ICommand ZoomOutCommand { get; }
-        public ICommand ResetViewCommand { get; }
-
-        public NodeEditorViewModel()
-        {
-            Nodes = new ObservableCollection<NodeViewModel>();
-            Connections = new ObservableCollection<ConnectionViewModel>();
-
-            AddNodeCommand = new RelayCommand<Point>(AddNode);
-            DeleteNodeCommand = new RelayCommand<NodeViewModel>(DeleteNode);
-            DeleteSelectedNodeCommand = new RelayCommand(DeleteSelectedNode, () => SelectedNode != null);
-            DeleteConnectionCommand = new RelayCommand<ConnectionViewModel>(DeleteConnection);
-            ZoomInCommand = new RelayCommand(() => ViewportScale *= 1.2);
-            ZoomOutCommand = new RelayCommand(() => ViewportScale /= 1.2);
-            ResetViewCommand = new RelayCommand(ResetView);
-        }
-
-        public void AddNode(Point position)
-        {
-            var model = new NodeModel($"Node {Nodes.Count + 1}", position.X, position.Y);
-            var viewModel = new NodeViewModel(model);
-            
-            // Add some default ports
-            viewModel.AddInputPort("Input 1");
-            viewModel.AddOutputPort("Output 1");
-            
-            Nodes.Add(viewModel);
-        }
-
-        public void DeleteNode(NodeViewModel node)
-        {
-            if (node == null) return;
-
-            // Remove all connections to this node
-            var connectionsToRemove = Connections
-                .Where(c => c.SourcePort?.ParentNode == node || c.TargetPort?.ParentNode == node)
-                .ToList();
-
-            foreach (var connection in connectionsToRemove)
-            {
-                Connections.Remove(connection);
-            }
-
-            // Clear selection if this node is selected
-            if (SelectedNode == node)
-            {
-                SelectedNode = null;
-            }
-
-            Nodes.Remove(node);
-        }
-
-        public void DeleteSelectedNode()
-        {
-            if (SelectedNode != null)
-            {
-                DeleteNode(SelectedNode);
-            }
-        }
-
-        public void DeleteConnection(ConnectionViewModel connection)
-        {
-            if (connection != null)
-            {
-                Connections.Remove(connection);
-            }
-        }
-
-        public void StartConnection(PortViewModel port)
-        {
-            if (port == null) return;
-
-            var model = new ConnectionModel();
-            PendingConnection = new ConnectionViewModel(model);
-
-            if (port.Direction == PortDirection.Output)
-            {
-                PendingConnection.SourcePort = port;
-                // Initialize points immediately
-                PendingConnection.SourcePoint = port.Position;
-                PendingConnection.TargetPoint = port.Position; // Start at the same position
-            }
-            else
-            {
-                PendingConnection.TargetPort = port;
-                // Initialize points immediately
-                PendingConnection.SourcePoint = port.Position; // Start at the same position
-                PendingConnection.TargetPoint = port.Position;
-            }
-        }
-
-        public void UpdatePendingConnection(Point point)
-        {
-            if (PendingConnection == null) return;
-
-            if (PendingConnection.SourcePort != null)
-            {
-                PendingConnection.SourcePoint = PendingConnection.SourcePort.Position;
-                PendingConnection.TargetPoint = point;
-            }
-            else if (PendingConnection.TargetPort != null)
-            {
-                PendingConnection.SourcePoint = point;
-                PendingConnection.TargetPoint = PendingConnection.TargetPort.Position;
-            }
-        }
-
-        public void CompleteConnection(PortViewModel port)
-        {
-            if (PendingConnection == null || port == null) return;
-
-            // Validate connection
-            PortViewModel sourcePort = null;
-            PortViewModel targetPort = null;
-
-            if (PendingConnection.SourcePort != null && port.Direction == PortDirection.Input)
-            {
-                sourcePort = PendingConnection.SourcePort;
-                targetPort = port;
-            }
-            else if (PendingConnection.TargetPort != null && port.Direction == PortDirection.Output)
-            {
-                sourcePort = port;
-                targetPort = PendingConnection.TargetPort;
-            }
-
-            // Prevent connecting to the same node
-            if (sourcePort != null && targetPort != null && sourcePort.ParentNode != targetPort.ParentNode)
-            {
-                // Check if connection already exists
-                var exists = Connections.Any(c => 
-                    c.SourcePort == sourcePort && c.TargetPort == targetPort);
-
-                if (!exists)
-                {
-                    var connection = new ConnectionViewModel(sourcePort, targetPort);
-                    connection.UpdatePoints();
+                    ConnectionViewModel connection = new ConnectionViewModel(connectionModel)
+                    {
+                        SourcePort = sourcePort,
+                        TargetPort = targetPort
+                    };
                     Connections.Add(connection);
                 }
             }
-
-            PendingConnection = null;
         }
 
-        public void CancelConnection()
-        {
-            PendingConnection = null;
-        }
-
-        public void UpdateConnectionPositions()
-        {
-            foreach (var connection in Connections)
-            {
-                connection.UpdatePoints();
-            }
-        }
-
-        private void ResetView()
-        {
-            ViewportOffsetX = 0;
-            ViewportOffsetY = 0;
-            ViewportScale = 1.0;
-        }
-
-        public EditorStateModel GetEditorState()
-        {
-            return new EditorStateModel
-            {
-                Nodes = Nodes.Select(n => n.GetModel()).ToList(),
-                Connections = Connections.Select(c => c.GetModel()).ToList(),
-                ViewportOffsetX = ViewportOffsetX,
-                ViewportOffsetY = ViewportOffsetY,
-                ViewportScale = ViewportScale
-            };
-        }
-
-        public void LoadEditorState(EditorStateModel state)
-        {
-            if (state == null) return;
-
-            Nodes.Clear();
-            Connections.Clear();
-
-            // Load nodes
-            var nodeViewModels = state.Nodes.Select(n => new NodeViewModel(n)).ToList();
-            foreach (var node in nodeViewModels)
-            {
-                Nodes.Add(node);
-            }
-
-            // Load connections
-            foreach (var connectionModel in state.Connections)
-            {
-                var sourceNode = nodeViewModels.FirstOrDefault(n => n.Id == connectionModel.SourceNodeId);
-                var targetNode = nodeViewModels.FirstOrDefault(n => n.Id == connectionModel.TargetNodeId);
-
-                if (sourceNode != null && targetNode != null)
-                {
-                    var sourcePort = sourceNode.OutputPorts.FirstOrDefault(p => p.Id == connectionModel.SourcePortId);
-                    var targetPort = targetNode.InputPorts.FirstOrDefault(p => p.Id == connectionModel.TargetPortId);
-
-                    if (sourcePort != null && targetPort != null)
-                    {
-                        var connection = new ConnectionViewModel(connectionModel)
-                        {
-                            SourcePort = sourcePort,
-                            TargetPort = targetPort
-                        };
-                        Connections.Add(connection);
-                    }
-                }
-            }
-
-            ViewportOffsetX = state.ViewportOffsetX;
-            ViewportOffsetY = state.ViewportOffsetY;
-            ViewportScale = state.ViewportScale;
-        }
+        ViewportOffsetX = state.ViewportOffsetX;
+        ViewportOffsetY = state.ViewportOffsetY;
+        ViewportScale = state.ViewportScale;
     }
 }

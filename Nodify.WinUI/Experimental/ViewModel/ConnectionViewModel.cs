@@ -1,98 +1,94 @@
 using System;
-using Nodify.WinUI.Experimental.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Nodify.WinUI.Experimental.Model;
 using Windows.Foundation;
 
-namespace Nodify.WinUI.Experimental.ViewModel
+namespace Nodify.WinUI.Experimental.ViewModel;
+
+/// <summary>
+/// ViewModel for a connection between two ports
+/// </summary>
+public sealed partial class ConnectionViewModel : ObservableObject
 {
-    /// <summary>
-    /// ViewModel for a connection between two ports
-    /// </summary>
-    public class ConnectionViewModel : ObservableObject
+    private readonly ConnectionModel model;
+
+    public ConnectionViewModel(ConnectionModel model)
     {
-        private readonly ConnectionModel _model;
-        private PortViewModel _sourcePort;
-        private PortViewModel _targetPort;
-        private Point _sourcePoint;
-        private Point _targetPoint;
-        private bool _isSelected;
+        ArgumentNullException.ThrowIfNull(model);
+        this.model = model;
+    }
 
-        public Guid Id => _model.Id;
+    public ConnectionViewModel(PortViewModel sourcePort, PortViewModel targetPort)
+    {
+        model = ConnectionModel.Create();
+        SourcePort = sourcePort;
+        TargetPort = targetPort;
+    }
 
-        public PortViewModel SourcePort
+    public Guid Id { get => model.Id; }
+
+    public PortViewModel? SourcePort
+    {
+        get;
+        set
         {
-            get => _sourcePort;
-            set
+            if (field != value)
             {
-                if (_sourcePort != value)
+                field = value;
+                if (field != null)
                 {
-                    _sourcePort = value;
-                    if (_sourcePort != null)
-                    {
-                        _model.SourcePortId = _sourcePort.Id;
-                        _model.SourceNodeId = _sourcePort.NodeId;
-                    }
-                    OnPropertyChanged();
+                    model.SourcePortId = field.Id;
+                    model.SourceNodeId = field.NodeId;
                 }
+                OnPropertyChanged();
             }
         }
+    }
 
-        public PortViewModel TargetPort
+    public PortViewModel? TargetPort
+    {
+        get;
+        set
         {
-            get => _targetPort;
-            set
+            if (field != value)
             {
-                if (_targetPort != value)
+                field = value;
+                if (field != null)
                 {
-                    _targetPort = value;
-                    if (_targetPort != null)
-                    {
-                        _model.TargetPortId = _targetPort.Id;
-                        _model.TargetNodeId = _targetPort.NodeId;
-                    }
-                    OnPropertyChanged();
+                    model.TargetPortId = field.Id;
+                    model.TargetNodeId = field.NodeId;
                 }
+                OnPropertyChanged();
             }
         }
+    }
 
-        public Point SourcePoint
+    [ObservableProperty]
+    public partial Point SourcePoint { get; set; }
+
+    [ObservableProperty]
+    public partial Point TargetPoint { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
+
+
+
+    public void UpdatePoints()
+    {
+        if (SourcePort is not null)
         {
-            get => _sourcePoint;
-            set => SetProperty(ref _sourcePoint, value);
+            SourcePoint = SourcePort.Position;
         }
 
-        public Point TargetPoint
+        if (TargetPort is not null)
         {
-            get => _targetPoint;
-            set => SetProperty(ref _targetPoint, value);
+            TargetPoint = TargetPort.Position;
         }
+    }
 
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
-
-        public ConnectionViewModel(ConnectionModel model)
-        {
-            _model = model ?? throw new ArgumentNullException(nameof(model));
-        }
-
-        public ConnectionViewModel(PortViewModel sourcePort, PortViewModel targetPort)
-        {
-            _model = new ConnectionModel();
-            SourcePort = sourcePort;
-            TargetPort = targetPort;
-        }
-
-        public void UpdatePoints()
-        {
-            if (SourcePort != null)
-                SourcePoint = SourcePort.Position;
-            if (TargetPort != null)
-                TargetPoint = TargetPort.Position;
-        }
-
-        public ConnectionModel GetModel() => _model;
+    public ConnectionModel GetModel()
+    {
+        return model;
     }
 }

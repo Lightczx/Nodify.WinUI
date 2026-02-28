@@ -1,61 +1,59 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Nodify.WinUI.Experimental.Model
+namespace Nodify.WinUI.Experimental.Model;
+
+/// <summary>
+/// Model representing a node port
+/// </summary>
+public class PortModel
 {
-    /// <summary>
-    /// Port direction enumeration
-    /// </summary>
-    public enum PortDirection
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [JsonPropertyName("direction")]
+    public PortDirection Direction { get; set; }
+
+    [JsonPropertyName("type")]
+    public PortType Type { get; set; }
+
+    [JsonPropertyName("nodeId")]
+    public Guid NodeId { get; set; }
+
+    public static PortModel Create()
     {
-        Input,
-        Output
+        return new()
+        {
+            Id = Guid.NewGuid(),
+            Name = "Port",
+            Type = PortType.Default,
+        };
     }
 
-    /// <summary>
-    /// Port type enumeration (can be extended for type checking)
-    /// </summary>
-    public enum PortType
+    public static PortModel Create(string name, PortDirection direction, Guid nodeId)
     {
-        Default,
-        Execution,
-        Data,
-        Event
+        return new()
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Direction = direction,
+            Type = PortType.Default,
+            NodeId = nodeId,
+        };
     }
 
-    /// <summary>
-    /// Model representing a node port
-    /// </summary>
-    public class PortModel
+    public static PortModel Create(string name, PortDirection direction, PortType type, Guid nodeId)
     {
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("direction")]
-        public PortDirection Direction { get; set; }
-
-        [JsonPropertyName("type")]
-        public PortType Type { get; set; }
-
-        [JsonPropertyName("nodeId")]
-        public Guid NodeId { get; set; }
-
-        public PortModel()
+        return new()
         {
-            Id = Guid.NewGuid();
-            Name = "Port";
-            Type = PortType.Default;
-        }
-
-        public PortModel(string name, PortDirection direction, PortType type = PortType.Default)
-        {
-            Id = Guid.NewGuid();
-            Name = name;
-            Direction = direction;
-            Type = type;
-        }
+            Id = Guid.NewGuid(),
+            Name = name,
+            Direction = direction,
+            Type = type,
+            NodeId = nodeId,
+        };
     }
 }

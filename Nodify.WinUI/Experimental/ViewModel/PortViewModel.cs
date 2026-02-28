@@ -1,81 +1,58 @@
 using System;
-using Nodify.WinUI.Experimental.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Nodify.WinUI.Experimental.Model;
 using Windows.Foundation;
 
-namespace Nodify.WinUI.Experimental.ViewModel
+namespace Nodify.WinUI.Experimental.ViewModel;
+
+/// <summary>
+/// ViewModel for a port
+/// </summary>
+public sealed partial class PortViewModel : ObservableObject
 {
-    /// <summary>
-    /// ViewModel for a port
-    /// </summary>
-    public class PortViewModel : ObservableObject
+    private readonly PortModel model;
+
+    public PortViewModel(PortModel model)
     {
-        private readonly PortModel _model;
-        private Point _position;
+        this.model = model ?? throw new ArgumentNullException(nameof(model));
+    }
 
-        public Guid Id => _model.Id;
+    public Guid Id { get => model.Id; }
 
-        public string Name
-        {
-            get => _model.Name;
-            set
-            {
-                if (_model.Name != value)
-                {
-                    _model.Name = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+    public string Name
+    {
+        get => model.Name;
+        set => SetProperty(model.Name, value, model, static (m, v) => m.Name = v);
+    }
 
-        public PortDirection Direction
-        {
-            get => _model.Direction;
-            set
-            {
-                if (_model.Direction != value)
-                {
-                    _model.Direction = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+    public PortDirection Direction
+    {
+        get => model.Direction;
+        set => SetProperty(model.Direction, value, model, static (m, v) => m.Direction = v);
+    }
 
-        public PortType Type
-        {
-            get => _model.Type;
-            set
-            {
-                if (_model.Type != value)
-                {
-                    _model.Type = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+    public PortType Type
+    {
+        get => model.Type;
+        set => SetProperty(model.Type, value, model, static (m, v) => m.Type = v);
+    }
 
-        public Guid NodeId
-        {
-            get => _model.NodeId;
-            set => _model.NodeId = value;
-        }
+    public Guid NodeId
+    {
+        get => model.NodeId;
+        set => model.NodeId = value;
+    }
 
-        /// <summary>
-        /// Absolute position of the port in canvas coordinates (updated by UI)
-        /// </summary>
-        public Point Position
-        {
-            get => _position;
-            set => SetProperty(ref _position, value);
-        }
+    /// <summary>
+    /// Absolute position of the port in canvas coordinates (updated by UI)
+    /// </summary>
+    [ObservableProperty]
+    public partial Point Position { get; set; }
 
-        public NodeViewModel ParentNode { get; set; }
+    public NodeViewModel? ParentNode { get; set; }
 
-        public PortViewModel(PortModel model)
-        {
-            _model = model ?? throw new ArgumentNullException(nameof(model));
-        }
-
-        public PortModel GetModel() => _model;
+    public PortModel GetModel()
+    {
+        return model;
     }
 }

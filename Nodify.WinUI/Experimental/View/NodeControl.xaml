@@ -6,16 +6,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:view="using:Nodify.WinUI.Experimental.View"
     xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
+    xmlns:cwc="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d"
     Width="{Binding Width}"
     Height="{Binding Height}"
-    PointerPressed="NodeControl_PointerPressed"
-    PointerMoved="NodeControl_PointerMoved"
-    PointerReleased="NodeControl_PointerReleased">
+    PointerPressed="OnPointerPressed"
+    PointerMoved="OnPointerMoved"
+    PointerReleased="OnPointerReleased">
 
     <UserControl.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        
+        <cwc:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
         <Style x:Key="PortItemsControlStyle" TargetType="ItemsControl">
             <Setter Property="ItemTemplate">
                 <Setter.Value>
@@ -53,12 +54,12 @@
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
-            <Grid Grid.Row="0" 
+            <Grid Grid.Row="0"
                   Background="{ThemeResource AccentFillColorDefaultBrush}"
                   CornerRadius="6,6,0,0"
                   Padding="8,4"
                   x:Name="TitleBar">
-                <TextBlock 
+                <TextBlock
                     Text="{Binding Title}"
                     FontWeight="SemiBold"
                     Foreground="White"
@@ -74,7 +75,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Input Ports -->
-                <ItemsControl 
+                <ItemsControl
                     Grid.Column="0"
                     ItemsSource="{Binding InputPorts}"
                     Style="{StaticResource PortItemsControlStyle}"
@@ -92,7 +93,7 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
 
                 <!-- Output Ports -->
-                <ItemsControl 
+                <ItemsControl
                     Grid.Column="2"
                     ItemsSource="{Binding OutputPorts}"
                     Style="{StaticResource PortItemsControlStyle}"

@@ -6,105 +6,115 @@ using Microsoft.UI.Xaml.Media;
 using Nodify.WinUI.Experimental.ViewModel;
 using Windows.Foundation;
 
-namespace Nodify.WinUI.Experimental.View
+namespace Nodify.WinUI.Experimental.View;
+
+public sealed partial class ConnectionControl : UserControl
 {
-    public sealed partial class ConnectionControl : UserControl
+    public ConnectionControl()
     {
-        public ConnectionViewModel ViewModel => DataContext as ConnectionViewModel;
+        InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+    }
 
-        public event EventHandler<ConnectionViewModel> ConnectionRemoved;
+    public event EventHandler<ConnectionViewModel?>? ConnectionRemoved;
 
-        public ConnectionControl()
+    public ConnectionViewModel? ViewModel { get => DataContext as ConnectionViewModel; }
+
+    private static bool IsValidPoint(Point point)
+    {
+        // Check for NaN, Infinity, or invalid values
+        return !double.IsNaN(point.X)
+            && !double.IsNaN(point.Y)
+            && !double.IsInfinity(point.X)
+            && !double.IsInfinity(point.Y);
+    }
+
+    private static PathGeometry CreateBezierGeometry(Point start, Point end)
+    {
+        PathFigure pathFigure = new()
         {
-            this.InitializeComponent();
-            this.DataContextChanged += ConnectionControl_DataContextChanged;
+            StartPoint = start
+        };
+
+        // Calculate control points for a smooth Bézier curve
+        double distance = end.X - start.X;
+        double controlPointOffset = Math.Max(Math.Abs(distance) * 0.5, 50);
+
+        Point controlPoint1 = new(start.X + controlPointOffset, start.Y);
+        Point controlPoint2 = new(end.X - controlPointOffset, end.Y);
+
+        BezierSegment bezierSegment = new()
+        {
+            Point1 = controlPoint1,
+            Point2 = controlPoint2,
+            Point3 = end
+        };
+
+        pathFigure.Segments.Add(bezierSegment);
+
+        PathGeometry pathGeometry = new();
+        pathGeometry.Figures.Add(pathFigure);
+
+        return pathGeometry;
+    }
+
+    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+    {
+        if (ViewModel is null)
+        {
+            return;
         }
 
-        private void ConnectionControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        UpdatePath();
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName
+            is nameof(ConnectionViewModel.SourcePoint)
+            or nameof(ConnectionViewModel.TargetPoint)
+            or nameof(ConnectionViewModel.IsSelected))
         {
-            if (ViewModel != null)
-            {
-                ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-                UpdatePath();
-            }
+            UpdatePath();
+        }
+    }
+
+    private void UpdatePath()
+    {
+        if (ViewModel is null)
+        {
+            return;
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        // Validate points before creating geometry
+        if (!IsValidPoint(ViewModel.SourcePoint) || !IsValidPoint(ViewModel.TargetPoint))
         {
-            if (e.PropertyName == nameof(ConnectionViewModel.SourcePoint) ||
-                e.PropertyName == nameof(ConnectionViewModel.TargetPoint) ||
-                e.PropertyName == nameof(ConnectionViewModel.IsSelected))
-            {
-                UpdatePath();
-            }
+            // Don't update path with invalid points
+            return;
         }
 
-        private void UpdatePath()
-        {
-            if (ViewModel == null) return;
+        // In WinUI 3, each Path needs its own Geometry instance
+        ConnectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+        SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
 
-            // Validate points before creating geometry
-            if (!IsValidPoint(ViewModel.SourcePoint) || !IsValidPoint(ViewModel.TargetPoint))
-            {
-                // Don't update path with invalid points
-                return;
-            }
+        SelectionPath.Visibility = ViewModel.IsSelected ? Visibility.Visible : Visibility.Collapsed;
+    }
 
-            // In WinUI 3, each Path needs its own Geometry instance
-            ConnectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
-            SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+    private void OnConnectionPathPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        ConnectionPath.StrokeThickness = 4;
+    }
 
-            SelectionPath.Visibility = ViewModel.IsSelected ? Visibility.Visible : Visibility.Collapsed;
-        }
+    private void OnConnectionPathPointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        ConnectionPath.StrokeThickness = 3;
+    }
 
-        private bool IsValidPoint(Point point)
-        {
-            // Check for NaN, Infinity, or invalid values
-            return !double.IsNaN(point.X) && !double.IsNaN(point.Y) &&
-                   !double.IsInfinity(point.X) && !double.IsInfinity(point.Y);
-        }
-
-        private Geometry CreateBezierGeometry(Point start, Point end)
-        {
-            var pathFigure = new PathFigure { StartPoint = start };
-
-            // Calculate control points for a smooth bezier curve
-            var distance = end.X - start.X;
-            var controlPointOffset = Math.Max(Math.Abs(distance) * 0.5, 50);
-
-            var controlPoint1 = new Point(start.X + controlPointOffset, start.Y);
-            var controlPoint2 = new Point(end.X - controlPointOffset, end.Y);
-
-            var bezierSegment = new BezierSegment
-            {
-                Point1 = controlPoint1,
-                Point2 = controlPoint2,
-                Point3 = end
-            };
-
-            pathFigure.Segments.Add(bezierSegment);
-
-            var pathGeometry = new PathGeometry();
-            pathGeometry.Figures.Add(pathFigure);
-
-            return pathGeometry;
-        }
-
-        private void ConnectionPath_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            ConnectionPath.StrokeThickness = 4;
-        }
-
-        private void ConnectionPath_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            ConnectionPath.StrokeThickness = 3;
-        }
-
-        private void ConnectionPath_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            // Remove connection on double-tap
-            ConnectionRemoved?.Invoke(this, ViewModel);
-            e.Handled = true;
-        }
+    private void OnConnectionPathDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        // Remove connection on double-tap
+        ConnectionRemoved?.Invoke(this, ViewModel);
+        e.Handled = true;
     }
 }

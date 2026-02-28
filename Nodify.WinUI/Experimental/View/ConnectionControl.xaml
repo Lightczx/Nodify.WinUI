@@ -14,9 +14,9 @@
             StrokeThickness="3"
             StrokeStartLineCap="Round"
             StrokeEndLineCap="Round"
-            PointerEntered="ConnectionPath_PointerEntered"
-            PointerExited="ConnectionPath_PointerExited"
-            DoubleTapped="ConnectionPath_DoubleTapped"/>
+            PointerEntered="OnConnectionPathPointerEntered"
+            PointerExited="OnConnectionPathPointerExited"
+            DoubleTapped="OnConnectionPathDoubleTapped"/>
 
         <!-- Selected State -->
         <Path

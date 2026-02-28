@@ -16,10 +16,10 @@
             StrokeThickness="2"
             Width="16"
             Height="16"
-            PointerEntered="PortEllipse_PointerEntered"
-            PointerExited="PortEllipse_PointerExited"
-            PointerPressed="PortEllipse_PointerPressed"
-            PointerReleased="PortEllipse_PointerReleased"/>
+            PointerEntered="OnPortEllipsePointerEntered"
+            PointerExited="OnPortEllipsePointerExited"
+            PointerPressed="OnPortEllipsePointerPressed"
+            PointerReleased="OnPortEllipsePointerReleased"/>
         
         <ToolTipService.ToolTip>
             <ToolTip>

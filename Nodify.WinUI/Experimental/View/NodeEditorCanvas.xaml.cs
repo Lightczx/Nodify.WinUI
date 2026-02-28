@@ -6,129 +6,130 @@ using Microsoft.UI.Xaml.Media;
 using Nodify.WinUI.Experimental.Helpers;
 using Nodify.WinUI.Experimental.ViewModel;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Windows.Foundation;
-using Windows.System;
+using Windows.Storage;
+using Nodify.WinUI.Experimental.Model;
 
-namespace Nodify.WinUI.Experimental.View
+namespace Nodify.WinUI.Experimental.View;
+
+public sealed partial class NodeEditorCanvas : UserControl
 {
-    public sealed partial class NodeEditorCanvas : UserControl
+    private bool isPanning;
+    private Point panStartPoint;
+    private Point panStartOffset;
+    private PortViewModel? connectionStartPort;
+
+    public NodeEditorViewModel? ViewModel
     {
-        private bool _isPanning;
-        private Point _panStartPoint;
-        private Point _panStartOffset;
-        private PortViewModel _connectionStartPort;
-        private NodeEditorViewModel _viewModel;
-
-        public NodeEditorViewModel ViewModel
+        get;
+        set
         {
-            get => _viewModel;
-            set
+            if (field is not null)
             {
-                if (_viewModel != null)
+                field.Nodes.CollectionChanged -= OnNodesCollectionChanged;
+                field.Connections.CollectionChanged -= OnConnectionsCollectionChanged;
+                field.PropertyChanged -= OnViewModelPropertyChanged;
+            }
+
+            field = value;
+            DataContext = value;
+
+            if (field is not null)
+            {
+                field.Nodes.CollectionChanged += OnNodesCollectionChanged;
+                field.Connections.CollectionChanged += OnConnectionsCollectionChanged;
+                field.PropertyChanged += OnViewModelPropertyChanged;
+
+                // Initialize existing items
+                foreach (NodeViewModel node in field.Nodes)
                 {
-                    _viewModel.Nodes.CollectionChanged -= Nodes_CollectionChanged;
-                    _viewModel.Connections.CollectionChanged -= Connections_CollectionChanged;
-                    _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                    AddNodeControl(node);
                 }
 
-                _viewModel = value;
-                DataContext = value;
-
-                if (_viewModel != null)
+                foreach (ConnectionViewModel connection in field.Connections)
                 {
-                    _viewModel.Nodes.CollectionChanged += Nodes_CollectionChanged;
-                    _viewModel.Connections.CollectionChanged += Connections_CollectionChanged;
-                    _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-                    // Initialize existing items
-                    foreach (var node in _viewModel.Nodes)
-                    {
-                        AddNodeControl(node);
-                    }
-                    foreach (var connection in _viewModel.Connections)
-                    {
-                        AddConnectionControl(connection);
-                    }
+                    AddConnectionControl(connection);
                 }
             }
         }
+    }
 
-        public NodeEditorCanvas()
+    public NodeEditorCanvas()
+    {
+        InitializeComponent();
+    }
+
+    private static IEnumerable<PortControl> FindPortControls(DependencyObject parent)
+    {
+        List<PortControl> ports = [];
+        int childCount = VisualTreeHelper.GetChildrenCount(parent);
+
+        for (int i = 0; i < childCount; i++)
         {
-            this.InitializeComponent();
-            this.Loaded += NodeEditorCanvas_Loaded;
-        }
-
-        private void NodeEditorCanvas_Loaded(object sender, RoutedEventArgs e)
-        {
-            DrawGridPattern();
-        }
-
-        private void DrawGridPattern()
-        {
-            // Simple grid pattern
-            const int gridSize = 20;
-            const int gridExtent = 5000;
-
-            for (int x = -gridExtent; x <= gridExtent; x += gridSize)
+            DependencyObject? child = VisualTreeHelper.GetChild(parent, i);
+            if (child is PortControl portControl)
             {
-                var line = new Microsoft.UI.Xaml.Shapes.Line
+                ports.Add(portControl);
+            }
+
+            ports.AddRange(FindPortControls(child));
+        }
+
+        return ports;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName
+            is nameof(NodeEditorViewModel.ViewportOffsetX)
+            or nameof(NodeEditorViewModel.ViewportOffsetY)
+            or nameof(NodeEditorViewModel.ViewportScale))
+        {
+            UpdateTransform();
+        }
+    }
+
+    private void UpdateTransform()
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        CanvasTransform.TranslateX = ViewModel.ViewportOffsetX;
+        CanvasTransform.TranslateY = ViewModel.ViewportOffsetY;
+        CanvasTransform.ScaleX = ViewModel.ViewportScale;
+        CanvasTransform.ScaleY = ViewModel.ViewportScale;
+
+        BackgroundTransform.TranslateX = ViewModel.ViewportOffsetX;
+        BackgroundTransform.TranslateY = ViewModel.ViewportOffsetY;
+        BackgroundTransform.ScaleX = ViewModel.ViewportScale;
+        BackgroundTransform.ScaleY = ViewModel.ViewportScale;
+    }
+
+    private void OnNodesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action is NotifyCollectionChangedAction.Reset)
+        {
+            // Clear all UI controls when collection is reset
+            NodesCanvas.Children.Clear();
+
+            // Add new items if any
+            if (ViewModel is not null)
+            {
+                foreach (NodeViewModel node in ViewModel.Nodes)
                 {
-                    X1 = x,
-                    Y1 = -gridExtent,
-                    X2 = x,
-                    Y2 = gridExtent,
-                    Stroke = (Brush)Resources["GridLineBrush"],
-                    StrokeThickness = 1
-                };
-                BackgroundCanvas.Children.Add(line);
-            }
-
-            for (int y = -gridExtent; y <= gridExtent; y += gridSize)
-            {
-                var line = new Microsoft.UI.Xaml.Shapes.Line
-                {
-                    X1 = -gridExtent,
-                    Y1 = y,
-                    X2 = gridExtent,
-                    Y2 = y,
-                    Stroke = (Brush)Resources["GridLineBrush"],
-                    StrokeThickness = 1
-                };
-                BackgroundCanvas.Children.Add(line);
+                    AddNodeControl(node);
+                }
             }
         }
-
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        else
         {
-            if (e.PropertyName == nameof(NodeEditorViewModel.ViewportOffsetX) ||
-                e.PropertyName == nameof(NodeEditorViewModel.ViewportOffsetY) ||
-                e.PropertyName == nameof(NodeEditorViewModel.ViewportScale))
-            {
-                UpdateTransform();
-            }
-        }
-
-        private void UpdateTransform()
-        {
-            if (ViewModel == null) return;
-
-            CanvasTransform.TranslateX = ViewModel.ViewportOffsetX;
-            CanvasTransform.TranslateY = ViewModel.ViewportOffsetY;
-            CanvasTransform.ScaleX = ViewModel.ViewportScale;
-            CanvasTransform.ScaleY = ViewModel.ViewportScale;
-
-            BackgroundTransform.TranslateX = ViewModel.ViewportOffsetX;
-            BackgroundTransform.TranslateY = ViewModel.ViewportOffsetY;
-            BackgroundTransform.ScaleX = ViewModel.ViewportScale;
-            BackgroundTransform.ScaleY = ViewModel.ViewportScale;
-        }
-
-        private void Nodes_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.NewItems != null)
+            if (e.NewItems is not null)
             {
                 foreach (NodeViewModel node in e.NewItems)
                 {
@@ -136,7 +137,7 @@ namespace Nodify.WinUI.Experimental.View
                 }
             }
 
-            if (e.OldItems != null)
+            if (e.OldItems is not null)
             {
                 foreach (NodeViewModel node in e.OldItems)
                 {
@@ -144,10 +145,27 @@ namespace Nodify.WinUI.Experimental.View
                 }
             }
         }
+    }
 
-        private void Connections_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    private void OnConnectionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action is NotifyCollectionChangedAction.Reset)
         {
-            if (e.NewItems != null)
+            // Clear all UI controls when collection is reset
+            ConnectionsCanvas.Children.Clear();
+
+            // Add new items if any
+            if (ViewModel is not null)
+            {
+                foreach (ConnectionViewModel connection in ViewModel.Connections)
+                {
+                    AddConnectionControl(connection);
+                }
+            }
+        }
+        else
+        {
+            if (e.NewItems is not null)
             {
                 foreach (ConnectionViewModel connection in e.NewItems)
                 {
@@ -155,7 +173,7 @@ namespace Nodify.WinUI.Experimental.View
                 }
             }
 
-            if (e.OldItems != null)
+            if (e.OldItems is not null)
             {
                 foreach (ConnectionViewModel connection in e.OldItems)
                 {
@@ -163,323 +181,363 @@ namespace Nodify.WinUI.Experimental.View
                 }
             }
         }
+    }
 
-        private void AddNodeControl(NodeViewModel node)
+    private void AddNodeControl(NodeViewModel node)
+    {
+        NodeControl nodeControl = new() { DataContext = node };
+        nodeControl.NodeMoved += OnNodeControlNodeMoved;
+
+        // Subscribe to selection changes
+        node.PropertyChanged += OnNodeViewModelPropertyChanged;
+
+        // Subscribe to port events
+        nodeControl.Loaded += OnNodeControlLoaded;
+
+        NodesCanvas.Children.Add(nodeControl);
+    }
+
+    private void OnNodeControlNodeMoved(object? sender, NodeViewModel node)
+    {
+        ViewModel?.UpdateConnectionPositions();
+    }
+
+    private void OnNodeControlLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not NodeControl nodeControl)
         {
-            var nodeControl = new NodeControl { DataContext = node };
-            nodeControl.NodeMoved += (s, n) => ViewModel?.UpdateConnectionPositions();
-            
-            // Subscribe to selection changes
-            node.PropertyChanged += (s, e) =>
+            return;
+        }
+
+        SubscribeToPortEvents(nodeControl);
+        UpdateNodePortPositions(nodeControl);
+    }
+
+    private void OnNodeViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not NodeViewModel node)
+        {
+            return;
+        }
+
+        if (e.PropertyName is nameof(NodeViewModel.IsSelected) && node.IsSelected)
+        {
+            ViewModel?.SelectedNode = node;
+        }
+    }
+
+    private void RemoveNodeControl(NodeViewModel? node)
+    {
+        if (node is null)
+        {
+            return;
+        }
+
+        // Try to find by ViewModel reference first
+        // If not found, try to find by ID (in case DataContext was cleared)
+        NodeControl? control =
+            NodesCanvas.Children.OfType<NodeControl>().FirstOrDefault(c => c.ViewModel == node) ??
+            NodesCanvas.Children.OfType<NodeControl>().FirstOrDefault(c => c.ViewModel?.Id == node.Id);
+
+        if (control != null)
+        {
+            NodesCanvas.Children.Remove(control);
+        }
+    }
+
+    private void SubscribeToPortEvents(NodeControl nodeControl)
+    {
+        foreach (PortControl port in FindPortControls(nodeControl))
+        {
+            port.ConnectionStarted += OnPortConnectionStarted;
+            port.ConnectionCompleted += OnPortConnectionCompleted;
+        }
+    }
+
+    private void UpdateNodePortPositions(NodeControl nodeControl)
+    {
+        nodeControl.UpdatePortPositions();
+        ViewModel?.UpdateConnectionPositions();
+    }
+
+    private void AddConnectionControl(ConnectionViewModel connection)
+    {
+        ConnectionControl connectionControl = new() { DataContext = connection };
+        connectionControl.ConnectionRemoved += OnConnectionControlConnectionRemoved;
+        ConnectionsCanvas.Children.Add(connectionControl);
+        connection.UpdatePoints();
+    }
+
+    private void OnConnectionControlConnectionRemoved(object? sender, ConnectionViewModel? connection)
+    {
+        ViewModel?.DeleteConnection(connection);
+    }
+
+    private void RemoveConnectionControl(ConnectionViewModel? connection)
+    {
+        if (connection is null)
+        {
+            return;
+        }
+
+        // Try to find by ViewModel reference first
+        // If not found, try to find by ID (in case DataContext was cleared)
+        ConnectionControl? control =
+            ConnectionsCanvas.Children.OfType<ConnectionControl>().FirstOrDefault(c => c.ViewModel == connection) ??
+            ConnectionsCanvas.Children.OfType<ConnectionControl>().FirstOrDefault(c => c.ViewModel?.Id == connection.Id);
+
+        if (control != null)
+        {
+            ConnectionsCanvas.Children.Remove(control);
+        }
+    }
+
+    private void OnPortConnectionStarted(object? sender, PortViewModel port)
+    {
+        connectionStartPort = port;
+        ViewModel?.StartConnection(port);
+
+        if (ViewModel?.PendingConnection == null)
+        {
+            return;
+        }
+
+        PendingConnectionControl.DataContext = ViewModel.PendingConnection;
+        PendingConnectionControl.Visibility = Visibility.Visible;
+    }
+
+    private void OnPortConnectionCompleted(object? sender, PortViewModel? port)
+    {
+        if (connectionStartPort is not null && port is not null)
+        {
+            ViewModel?.CompleteConnection(port);
+        }
+
+        connectionStartPort = null;
+        PendingConnectionControl.Visibility = Visibility.Collapsed;
+        PendingConnectionControl.DataContext = null;
+    }
+
+    private void OnMainCanvasPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        PointerPoint? pointer = e.GetCurrentPoint(this);
+
+        if (!pointer.Properties.IsMiddleButtonPressed)
+        {
+            return;
+        }
+
+        isPanning = true;
+        panStartPoint = pointer.Position;
+        panStartOffset = new(ViewModel?.ViewportOffsetX ?? 0, ViewModel?.ViewportOffsetY ?? 0);
+        MainCanvas.CapturePointer(e.Pointer);
+        e.Handled = true;
+    }
+
+    private void OnMainCanvasPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (isPanning && ViewModel is not null)
+        {
+            PointerPoint? pointer = e.GetCurrentPoint(this);
+            Point delta = new(pointer.Position.X - panStartPoint.X, pointer.Position.Y - panStartPoint.Y);
+            ViewModel.ViewportOffsetX = panStartOffset.X + delta.X;
+            ViewModel.ViewportOffsetY = panStartOffset.Y + delta.Y;
+            e.Handled = true;
+        }
+        else if (ViewModel?.PendingConnection is not null)
+        {
+            // Update pending connection
+            Point canvasPoint = e.GetCurrentPoint(MainCanvas).Position;
+            ViewModel.UpdatePendingConnection(canvasPoint);
+        }
+    }
+
+    private void OnMainCanvasPointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        if (isPanning)
+        {
+            isPanning = false;
+            MainCanvas.ReleasePointerCapture(e.Pointer);
+            e.Handled = true;
+        }
+
+        if (ViewModel?.PendingConnection is null)
+        {
+            return;
+        }
+
+        ViewModel.CancelConnection();
+        PendingConnectionControl.Visibility = Visibility.Collapsed;
+        PendingConnectionControl.DataContext = null;
+    }
+
+    private void OnMainCanvasPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        PointerPoint? pointer = e.GetCurrentPoint(this);
+
+        if (pointer.Properties.IsHorizontalMouseWheel || ViewModel is null)
+        {
+            return;
+        }
+
+        int delta = pointer.Properties.MouseWheelDelta;
+        double zoomFactor = delta > 0 ? 1.1 : 0.9;
+
+        // Get mouse position relative to canvas
+        Point mousePos = e.GetCurrentPoint(MainCanvas).Position;
+
+        // Calculate new scale
+        double newScale = ViewModel.ViewportScale * zoomFactor;
+        newScale = Math.Max(0.1, Math.Min(5.0, newScale));
+
+        // Adjust offset to zoom toward mouse position
+        double scaleChange = newScale / ViewModel.ViewportScale;
+        ViewModel.ViewportOffsetX = mousePos.X - (mousePos.X - ViewModel.ViewportOffsetX) * scaleChange;
+        ViewModel.ViewportOffsetY = mousePos.Y - (mousePos.Y - ViewModel.ViewportOffsetY) * scaleChange;
+        ViewModel.ViewportScale = newScale;
+
+        e.Handled = true;
+    }
+
+    private void OnMainCanvasDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        Point position = e.GetPosition(MainCanvas);
+
+        // Check if double-tapped on a node or connection
+        DependencyObject? originalSource = e.OriginalSource as DependencyObject;
+        bool isOverNode = false;
+
+        // Walk up the visual tree to see if we're over a NodeControl
+        DependencyObject? current = originalSource;
+        while (current != null && current != MainCanvas)
+        {
+            if (current is NodeControl)
             {
-                if (e.PropertyName == nameof(NodeViewModel.IsSelected) && node.IsSelected)
-                {
-                    if (ViewModel != null)
-                        ViewModel.SelectedNode = node;
-                }
+                isOverNode = true;
+                break;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        // Only create node if not over an existing node
+        if (!isOverNode)
+        {
+            ViewModel.AddNode(position);
+        }
+
+        e.Handled = true;
+    }
+
+    private void OnAddNodeButtonClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.AddNode(new(100, 100));
+    }
+
+    private void OnZoomInButtonClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.ViewportScale *= 1.2;
+    }
+
+    private void OnZoomOutButtonClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.ViewportScale /= 1.2;
+    }
+
+    private void OnResetViewButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        ViewModel.ViewportOffsetX = 0;
+        ViewModel.ViewportOffsetY = 0;
+        ViewModel.ViewportScale = 1.0;
+    }
+
+    private async void OnSaveButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Window window = GetWindow();
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            StorageFile? file = await SerializationHelper.PickSaveFileAsync(hwnd);
+
+            if (file == null)
+            {
+                return;
+            }
+
+            EditorStateModel state = ViewModel.GetEditorState();
+            await SerializationHelper.SaveToFileAsync(state, file);
+        }
+        catch (Exception ex)
+        {
+            // Show error dialog
+            ContentDialog dialog = new()
+            {
+                Title = "Save Error",
+                Content = $"Failed to save: {ex.Message}",
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
             };
-            
-            // Subscribe to port events
-            nodeControl.Loaded += (s, e) =>
+
+            await dialog.ShowAsync();
+        }
+    }
+
+    private async void OnLoadButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Window window = GetWindow();
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            StorageFile? file = await SerializationHelper.PickLoadFileAsync(hwnd);
+
+            if (file == null)
             {
-                SubscribeToPortEvents(nodeControl);
-                UpdateNodePortPositions(nodeControl);
+                return;
+            }
+
+            EditorStateModel? state = await SerializationHelper.LoadFromFileAsync(file);
+            if (state is not null)
+            {
+                ViewModel.LoadEditorState(state);
+            }
+        }
+        catch (Exception ex)
+        {
+            ContentDialog dialog = new()
+            {
+                Title = "Load Error",
+                Content = $"Failed to load: {ex.Message}",
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
             };
 
-            NodesCanvas.Children.Add(nodeControl);
+            await dialog.ShowAsync();
         }
+    }
 
-        private void RemoveNodeControl(NodeViewModel node)
-        {
-            var control = NodesCanvas.Children.OfType<NodeControl>()
-                .FirstOrDefault(c => c.ViewModel == node);
-            if (control != null)
-            {
-                NodesCanvas.Children.Remove(control);
-            }
-        }
-
-        private void SubscribeToPortEvents(NodeControl nodeControl)
-        {
-            foreach (var port in FindPortControls(nodeControl))
-            {
-                port.ConnectionStarted += Port_ConnectionStarted;
-                port.ConnectionCompleted += Port_ConnectionCompleted;
-            }
-        }
-
-        private System.Collections.Generic.IEnumerable<PortControl> FindPortControls(DependencyObject parent)
-        {
-            var ports = new System.Collections.Generic.List<PortControl>();
-            int childCount = VisualTreeHelper.GetChildrenCount(parent);
-            
-            for (int i = 0; i < childCount; i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is PortControl portControl)
-                {
-                    ports.Add(portControl);
-                }
-                ports.AddRange(FindPortControls(child));
-            }
-            
-            return ports;
-        }
-
-        private void UpdateNodePortPositions(NodeControl nodeControl)
-        {
-            nodeControl.UpdatePortPositions();
-            ViewModel?.UpdateConnectionPositions();
-        }
-
-        private void AddConnectionControl(ConnectionViewModel connection)
-        {
-            var connectionControl = new ConnectionControl { DataContext = connection };
-            connectionControl.ConnectionRemoved += (s, c) => ViewModel?.DeleteConnection(c);
-            ConnectionsCanvas.Children.Add(connectionControl);
-            connection.UpdatePoints();
-        }
-
-        private void RemoveConnectionControl(ConnectionViewModel connection)
-        {
-            var control = ConnectionsCanvas.Children.OfType<ConnectionControl>()
-                .FirstOrDefault(c => c.ViewModel == connection);
-            if (control != null)
-            {
-                ConnectionsCanvas.Children.Remove(control);
-            }
-        }
-
-        private void Port_ConnectionStarted(object sender, PortViewModel port)
-        {
-            _connectionStartPort = port;
-            ViewModel?.StartConnection(port);
-            
-            if (ViewModel?.PendingConnection != null)
-            {
-                PendingConnectionControl.DataContext = ViewModel.PendingConnection;
-                PendingConnectionControl.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void Port_ConnectionCompleted(object sender, PortViewModel port)
-        {
-            if (_connectionStartPort != null && port != null)
-            {
-                ViewModel?.CompleteConnection(port);
-            }
-
-            _connectionStartPort = null;
-            PendingConnectionControl.Visibility = Visibility.Collapsed;
-            PendingConnectionControl.DataContext = null;
-        }
-
-        private void MainCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var pointer = e.GetCurrentPoint(this);
-            
-            if (pointer.Properties.IsMiddleButtonPressed)
-            {
-                _isPanning = true;
-                _panStartPoint = pointer.Position;
-                _panStartOffset = new Point(ViewModel?.ViewportOffsetX ?? 0, ViewModel?.ViewportOffsetY ?? 0);
-                MainCanvas.CapturePointer(e.Pointer);
-                e.Handled = true;
-            }
-        }
-
-        private void MainCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            var pointer = e.GetCurrentPoint(this);
-
-            if (_isPanning && ViewModel != null)
-            {
-                var delta = new Point(
-                    pointer.Position.X - _panStartPoint.X,
-                    pointer.Position.Y - _panStartPoint.Y
-                );
-
-                ViewModel.ViewportOffsetX = _panStartOffset.X + delta.X;
-                ViewModel.ViewportOffsetY = _panStartOffset.Y + delta.Y;
-                e.Handled = true;
-            }
-            else if (ViewModel?.PendingConnection != null)
-            {
-                // Update pending connection
-                var canvasPoint = e.GetCurrentPoint(MainCanvas).Position;
-                ViewModel.UpdatePendingConnection(canvasPoint);
-            }
-        }
-
-        private void MainCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (_isPanning)
-            {
-                _isPanning = false;
-                MainCanvas.ReleasePointerCapture(e.Pointer);
-                e.Handled = true;
-            }
-
-            if (ViewModel?.PendingConnection != null)
-            {
-                ViewModel.CancelConnection();
-                PendingConnectionControl.Visibility = Visibility.Collapsed;
-                PendingConnectionControl.DataContext = null;
-            }
-        }
-
-        private void MainCanvas_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            var pointer = e.GetCurrentPoint(this);
-            
-            if (pointer.Properties.IsHorizontalMouseWheel == false && ViewModel != null)
-            {
-                var delta = pointer.Properties.MouseWheelDelta;
-                var zoomFactor = delta > 0 ? 1.1 : 0.9;
-
-                // Get mouse position relative to canvas
-                var mousePos = e.GetCurrentPoint(MainCanvas).Position;
-
-                // Calculate new scale
-                var newScale = ViewModel.ViewportScale * zoomFactor;
-                newScale = Math.Max(0.1, Math.Min(5.0, newScale));
-
-                // Adjust offset to zoom toward mouse position
-                var scaleChange = newScale / ViewModel.ViewportScale;
-                ViewModel.ViewportOffsetX = mousePos.X - (mousePos.X - ViewModel.ViewportOffsetX) * scaleChange;
-                ViewModel.ViewportOffsetY = mousePos.Y - (mousePos.Y - ViewModel.ViewportOffsetY) * scaleChange;
-                ViewModel.ViewportScale = newScale;
-
-                e.Handled = true;
-            }
-        }
-
-        private void MainCanvas_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (ViewModel != null)
-            {
-                var position = e.GetPosition(MainCanvas);
-                
-                // Check if double-tapped on a node or connection
-                var originalSource = e.OriginalSource as DependencyObject;
-                bool isOverNode = false;
-                
-                // Walk up the visual tree to see if we're over a NodeControl
-                var current = originalSource;
-                while (current != null && current != MainCanvas)
-                {
-                    if (current is NodeControl)
-                    {
-                        isOverNode = true;
-                        break;
-                    }
-                    current = VisualTreeHelper.GetParent(current);
-                }
-                
-                // Only create node if not over an existing node
-                if (!isOverNode)
-                {
-                    ViewModel.AddNode(position);
-                }
-                
-                e.Handled = true;
-            }
-        }
-
-        private void AddNodeButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel?.AddNode(new Point(100, 100));
-        }
-
-        private void ZoomInButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null)
-                ViewModel.ViewportScale *= 1.2;
-        }
-
-        private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null)
-                ViewModel.ViewportScale /= 1.2;
-        }
-
-        private void ResetViewButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null)
-            {
-                ViewModel.ViewportOffsetX = 0;
-                ViewModel.ViewportOffsetY = 0;
-                ViewModel.ViewportScale = 1.0;
-            }
-        }
-
-        private async void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel == null) return;
-
-            try
-            {
-                var window = GetWindow();
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-                var file = await SerializationHelper.PickSaveFileAsync(hwnd);
-
-                if (file != null)
-                {
-                    var state = ViewModel.GetEditorState();
-                    await SerializationHelper.SaveToFileAsync(state, file);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Show error dialog
-                var dialog = new ContentDialog
-                {
-                    Title = "Save Error",
-                    Content = $"Failed to save: {ex.Message}",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-        }
-
-        private async void LoadButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel == null) return;
-
-            try
-            {
-                var window = GetWindow();
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-                var file = await SerializationHelper.PickLoadFileAsync(hwnd);
-
-                if (file != null)
-                {
-                    var state = await SerializationHelper.LoadFromFileAsync(file);
-                    if (state != null)
-                    {
-                        ViewModel.LoadEditorState(state);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                var dialog = new ContentDialog
-                {
-                    Title = "Load Error",
-                    Content = $"Failed to load: {ex.Message}",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-        }
-
-        private Window GetWindow()
-        {
-            // In WinUI 3, get the window from App
-            var window = (Application.Current as App)?.m_window;
-            return window;
-        }
+    private Window GetWindow()
+    {
+        // In WinUI 3, get the window from App
+        return (Application.Current as App)?.Window!;
     }
 }

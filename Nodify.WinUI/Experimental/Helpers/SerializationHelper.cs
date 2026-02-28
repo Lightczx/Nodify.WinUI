@@ -6,81 +6,80 @@ using Nodify.WinUI.Experimental.Model;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
-namespace Nodify.WinUI.Experimental.Helpers
+namespace Nodify.WinUI.Experimental.Helpers;
+
+/// <summary>
+/// Helper class for serializing and deserializing the editor state
+/// </summary>
+public static class SerializationHelper
 {
-    /// <summary>
-    /// Helper class for serializing and deserializing the editor state
-    /// </summary>
-    public static class SerializationHelper
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
-        public static string Serialize(EditorStateModel state)
+    public static string Serialize(EditorStateModel state)
+    {
+        return JsonSerializer.Serialize(state, JsonOptions);
+    }
+
+    public static EditorStateModel? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<EditorStateModel>(json, JsonOptions);
+    }
+
+    public static async Task<bool> SaveToFileAsync(EditorStateModel state, StorageFile file)
+    {
+        try
         {
-            return JsonSerializer.Serialize(state, JsonOptions);
+            string json = Serialize(state);
+            await FileIO.WriteTextAsync(file, json);
+            return true;
         }
-
-        public static EditorStateModel Deserialize(string json)
+        catch (Exception)
         {
-            return JsonSerializer.Deserialize<EditorStateModel>(json, JsonOptions);
+            return false;
         }
+    }
 
-        public static async Task<bool> SaveToFileAsync(EditorStateModel state, StorageFile file)
+    public static async Task<EditorStateModel?> LoadFromFileAsync(StorageFile file)
+    {
+        try
         {
-            try
-            {
-                var json = Serialize(state);
-                await FileIO.WriteTextAsync(file, json);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            string? json = await FileIO.ReadTextAsync(file);
+            return Deserialize(json);
         }
-
-        public static async Task<EditorStateModel> LoadFromFileAsync(StorageFile file)
+        catch (Exception)
         {
-            try
-            {
-                var json = await FileIO.ReadTextAsync(file);
-                return Deserialize(json);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return null;
         }
+    }
 
-        public static async Task<StorageFile> PickSaveFileAsync(IntPtr windowHandle)
-        {
-            var savePicker = new FileSavePicker();
-            
-            // Initialize with window handle for WinUI 3
-            WinRT.Interop.InitializeWithWindow.Initialize(savePicker, windowHandle);
+    public static async Task<StorageFile?> PickSaveFileAsync(IntPtr windowHandle)
+    {
+        FileSavePicker savePicker = new();
 
-            savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            savePicker.FileTypeChoices.Add("Node Graph", new[] { ".nodegraph" });
-            savePicker.SuggestedFileName = "NodeGraph";
+        // Initialize with window handle for WinUI 3
+        WinRT.Interop.InitializeWithWindow.Initialize(savePicker, windowHandle);
 
-            return await savePicker.PickSaveFileAsync();
-        }
+        savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        savePicker.FileTypeChoices.Add("Node Graph", [".nodegraph"]);
+        savePicker.SuggestedFileName = "NodeGraph";
 
-        public static async Task<StorageFile> PickLoadFileAsync(IntPtr windowHandle)
-        {
-            var openPicker = new FileOpenPicker();
-            
-            // Initialize with window handle for WinUI 3
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, windowHandle);
+        return await savePicker.PickSaveFileAsync();
+    }
 
-            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            openPicker.FileTypeFilter.Add(".nodegraph");
+    public static async Task<StorageFile?> PickLoadFileAsync(IntPtr windowHandle)
+    {
+        FileOpenPicker openPicker = new();
 
-            return await openPicker.PickSingleFileAsync();
-        }
+        // Initialize with window handle for WinUI 3
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, windowHandle);
+
+        openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        openPicker.FileTypeFilter.Add(".nodegraph");
+
+        return await openPicker.PickSingleFileAsync();
     }
 }

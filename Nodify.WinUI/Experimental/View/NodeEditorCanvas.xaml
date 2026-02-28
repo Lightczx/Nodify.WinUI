@@ -24,11 +24,11 @@
         <!-- Main Canvas with Transform -->
         <Canvas x:Name="MainCanvas"
                 Background="Transparent"
-                PointerPressed="MainCanvas_PointerPressed"
-                PointerMoved="MainCanvas_PointerMoved"
-                PointerReleased="MainCanvas_PointerReleased"
-                PointerWheelChanged="MainCanvas_PointerWheelChanged"
-                DoubleTapped="MainCanvas_DoubleTapped">
+                PointerPressed="OnMainCanvasPointerPressed"
+                PointerMoved="OnMainCanvasPointerMoved"
+                PointerReleased="OnMainCanvasPointerReleased"
+                PointerWheelChanged="OnMainCanvasPointerWheelChanged"
+                DoubleTapped="OnMainCanvasDoubleTapped">
             
             <Canvas.RenderTransform>
                 <CompositeTransform x:Name="CanvasTransform"/>
@@ -59,37 +59,37 @@
             Spacing="8"
             Orientation="Horizontal">
             
-            <Button Content="➕ Add Node" Click="AddNodeButton_Click">
+            <Button Content="➕ Add Node" Click="OnAddNodeButtonClick">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="N" Modifiers="Control"/>
                 </Button.KeyboardAccelerators>
             </Button>
 
-            <Button Content="🔍+" Click="ZoomInButton_Click">
+            <Button Content="🔍+" Click="OnZoomInButtonClick">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Add" Modifiers="Control"/>
                 </Button.KeyboardAccelerators>
             </Button>
 
-            <Button Content="🔍-" Click="ZoomOutButton_Click">
+            <Button Content="🔍-" Click="OnZoomOutButtonClick">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Subtract" Modifiers="Control"/>
                 </Button.KeyboardAccelerators>
             </Button>
 
-            <Button Content="⟲ Reset View" Click="ResetViewButton_Click">
+            <Button Content="⟲ Reset View" Click="OnResetViewButtonClick">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Number0" Modifiers="Control"/>
                 </Button.KeyboardAccelerators>
             </Button>
 
-            <Button Content="💾 Save" Click="SaveButton_Click">
+            <Button Content="💾 Save" Click="OnSaveButtonClick">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="S" Modifiers="Control"/>
                 </Button.KeyboardAccelerators>
             </Button>
 
-            <Button Content="📂 Load" Click="LoadButton_Click">
+            <Button Content="📂 Load" Click="OnLoadButtonClick">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="O" Modifiers="Control"/>
                 </Button.KeyboardAccelerators>
