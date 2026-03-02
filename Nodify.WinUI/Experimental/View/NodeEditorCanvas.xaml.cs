@@ -265,12 +265,32 @@ public sealed partial class NodeEditorCanvas : UserControl
         ViewModel?.UpdateConnectionPositions();
     }
 
-    private void AddConnectionControl(ConnectionViewModel connection)
+    private void UpdateAllPortPositions()
     {
-        ConnectionControl connectionControl = new() { DataContext = connection };
+        foreach (NodeControl nodeControl in NodesCanvas.Children.OfType<NodeControl>())
+        {
+            nodeControl.UpdatePortPositions();
+        }
+    }
+
+    private async void AddConnectionControl(ConnectionViewModel connection)
+    {
+        ConnectionControl connectionControl = new() { ViewModel = connection };
         connectionControl.ConnectionRemoved += OnConnectionControlConnectionRemoved;
         ConnectionsCanvas.Children.Add(connectionControl);
+        
+        // Wait for layout to complete before updating connection points
+        await System.Threading.Tasks.Task.Delay(50);
+        
+        // Force update port positions
+        UpdateAllPortPositions();
+        
+        // Now update the connection points
         connection.UpdatePoints();
+        
+        System.Diagnostics.Debug.WriteLine($"[AddConnectionControl] Added connection from {connection.SourcePort?.Name} to {connection.TargetPort?.Name}");
+        System.Diagnostics.Debug.WriteLine($"[AddConnectionControl] Source position: {connection.SourcePort?.Position}");
+        System.Diagnostics.Debug.WriteLine($"[AddConnectionControl] Target position: {connection.TargetPort?.Position}");
     }
 
     private void OnConnectionControlConnectionRemoved(object? sender, ConnectionViewModel? connection)
@@ -307,20 +327,30 @@ public sealed partial class NodeEditorCanvas : UserControl
             return;
         }
 
-        PendingConnectionControl.DataContext = ViewModel.PendingConnection;
+        PendingConnectionControl.ViewModel = ViewModel.PendingConnection;
         PendingConnectionControl.Visibility = Visibility.Visible;
     }
 
-    private void OnPortConnectionCompleted(object? sender, PortViewModel? port)
+    private async void OnPortConnectionCompleted(object? sender, PortViewModel? port)
     {
         if (connectionStartPort is not null && port is not null)
         {
+            System.Diagnostics.Debug.WriteLine($"[OnPortConnectionCompleted] Completing connection from {connectionStartPort.Name} to {port.Name}");
+            System.Diagnostics.Debug.WriteLine($"[OnPortConnectionCompleted] Start port position: {connectionStartPort.Position}");
+            System.Diagnostics.Debug.WriteLine($"[OnPortConnectionCompleted] End port position: {port.Position}");
+            
+            // Force update port positions before completing connection
+            UpdateAllPortPositions();
+            
+            // Small delay to ensure positions are updated
+            await System.Threading.Tasks.Task.Delay(10);
+            
             ViewModel?.CompleteConnection(port);
         }
 
         connectionStartPort = null;
         PendingConnectionControl.Visibility = Visibility.Collapsed;
-        PendingConnectionControl.DataContext = null;
+        PendingConnectionControl.ViewModel = null;
     }
 
     private void OnMainCanvasPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -557,6 +587,11 @@ public sealed partial class NodeEditorCanvas : UserControl
             if (state is not null)
             {
                 ViewModel.LoadEditorState(state);
+                
+                // Wait for UI to render and update port positions
+                await System.Threading.Tasks.Task.Delay(100);
+                UpdateAllPortPositions();
+                ViewModel.UpdateConnectionPositions();
             }
         }
         catch (Exception ex)

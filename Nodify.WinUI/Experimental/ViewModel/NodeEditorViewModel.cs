@@ -294,6 +294,7 @@ public sealed partial class NodeEditorViewModel : ObservableObject
                         SourcePort = sourcePort,
                         TargetPort = targetPort
                     };
+                    connection.UpdatePoints();
                     Connections.Add(connection);
                 }
             }

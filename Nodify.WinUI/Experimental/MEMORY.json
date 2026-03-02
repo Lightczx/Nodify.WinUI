@@ -1,0 +1,32 @@
+{
+  "entities": [
+    {
+      "name": "NodeEditor连线问题修复",
+      "entityType": "问题修复",
+      "observations": [
+        "问题：新建连线和加载保存的连线都无法显示，SourcePort.Position和TargetPort.Position都是(0,0)",
+        "根本原因：PortControl的位置更新时机不正确，TransformToVisual在布局完成前被调用",
+        "修复方案1：在PortControl中使用DispatcherQueue延迟更新位置，确保布局完成后再计算",
+        "修复方案2：在NodeControl的Loaded事件中更新端口位置",
+        "修复方案3：在AddConnectionControl中延迟50ms后强制更新所有端口位置",
+        "修复方案4：在OnPortConnectionCompleted中先更新端口位置再完成连线",
+        "修复方案5：在UpdatePortPosition中检查ActualWidth和ActualHeight，确保控件已布局",
+        "修复方案6：添加详细的调试日志输出，便于追踪问题"
+      ]
+    },
+    {
+      "name": "连线显示问题修复",
+      "entityType": "bug_fix",
+      "observations": [
+        "问题：新建连线和加载保存的连线都不显示",
+        "根本原因：AddConnectionControl 方法中只设置了 DataContext 而不是 ViewModel 属性",
+        "ConnectionControl 的 ViewModel setter 会订阅 PropertyChanged 事件并调用 UpdatePath() 绘制连线",
+        "只设置 DataContext 不会触发 ViewModel setter，导致 UpdatePath() 从未被调用",
+        "解决方案：将 DataContext = connection 改为 ViewModel = connection",
+        "修改文件：NodeEditorCanvas.xaml.cs 第278行",
+        "添加调试日志到 ConnectionControl.UpdatePath() 方法"
+      ]
+    }
+  ],
+  "relations": []
+}

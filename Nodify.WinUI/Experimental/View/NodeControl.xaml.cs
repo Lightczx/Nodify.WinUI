@@ -16,9 +16,16 @@ public sealed partial class NodeControl : UserControl
     public NodeControl()
     {
         InitializeComponent();
+        Loaded += OnLoaded;
     }
 
     public event EventHandler<NodeViewModel>? NodeMoved;
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        // Update port positions after the node is loaded
+        UpdatePortPositions();
+    }
 
     public NodeViewModel? ViewModel
     {

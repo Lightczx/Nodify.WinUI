@@ -35,7 +35,11 @@ public sealed partial class PortControl : UserControl
 
             if (@field is not null)
             {
-                UpdatePortPosition();
+                // Schedule position update after layout
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    UpdatePortPosition();
+                });
             }
         }
     }
@@ -47,37 +51,62 @@ public sealed partial class PortControl : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        UpdatePortPosition();
+        // Update position when loaded
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+        {
+            UpdatePortPosition();
+        });
     }
 
     private void UpdatePortPosition()
     {
         if (ViewModel is null)
         {
+            System.Diagnostics.Debug.WriteLine($"[PortControl] ViewModel is null");
             return;
         }
 
         try
         {
+            // Check if the control is loaded and has valid size
+            if (ActualWidth == 0 || ActualHeight == 0)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PortControl] Control not yet laid out for port {ViewModel.Name}");
+                return;
+            }
+
+            UIElement? canvas = GetCanvasParent();
+            if (canvas is null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PortControl] Canvas not found for port {ViewModel.Name}");
+                return;
+            }
+
             // Get the center position of the port in canvas coordinates
-            Point position = TransformToVisual(GetCanvasParent()).TransformPoint(new(8, 8)); // Center of the ellipse
-            ViewModel.Position = position;
+            Point position = TransformToVisual(canvas).TransformPoint(new(8, 8)); // Center of the ellipse
+            
+            // Only update if position actually changed
+            if (Math.Abs(ViewModel.Position.X - position.X) > 0.1 || Math.Abs(ViewModel.Position.Y - position.Y) > 0.1)
+            {
+                ViewModel.Position = position;
+                System.Diagnostics.Debug.WriteLine($"[PortControl] Updated position for {ViewModel.Name}: ({position.X:F2}, {position.Y:F2})");
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore if transform fails
+            System.Diagnostics.Debug.WriteLine($"[PortControl] Failed to update position: {ex.Message}");
         }
     }
 
     private UIElement? GetCanvasParent()
     {
-        DependencyObject parent = this;
+        DependencyObject? parent = this;
         while (parent != null)
         {
             parent = VisualTreeHelper.GetParent(parent);
-            if (parent is Canvas or NodeEditorCanvas)
+            if (parent is Canvas canvas && canvas.Name == "NodesCanvas")
             {
-                return parent as UIElement;
+                return canvas;
             }
         }
 
