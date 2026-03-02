@@ -14,6 +14,7 @@
     <Border
         Width="200"
         Height="150"
+        Background="{ThemeResource SystemControlAcrylicElementMediumHighBrush}"
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
         BorderThickness="1"
         CornerRadius="4">
@@ -36,7 +37,7 @@
                 Margin="8,4"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                FontSize="10"
+                FontSize="12"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{Binding ViewportScale, Converter={StaticResource PercentageConverter}}" />
         </Grid>

@@ -31,7 +31,20 @@
         "ConnectionViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\ConnectionViewModel.cs",
         "PortViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\PortViewModel.cs",
         "NodeEditorViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\NodeEditorViewModel.cs",
-        "NodeViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\NodeViewModel.cs"
+        "NodeViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\NodeViewModel.cs",
+        "实现了 CheckAndShiftNodes() 方法，当节点被拖动到负坐标时自动平移所有节点和连接",
+        "CheckAndShiftNodes() 检测最小 X 和 Y 坐标，如果为负则计算偏移量",
+        "平移所有节点时同步调整 ViewportOffset 保持视觉连续性",
+        "使用 _isShiftingNodes 标志位防止批量更新时触发多次画布大小计算",
+        "添加 50 像素边距确保节点不会紧贴画布边缘",
+        "修改文件：NodeEditorViewModel.cs，添加 CheckAndShiftNodes() 方法和 _isShiftingNodes 标志位",
+        "属性面板新增节点位置信息显示（只读）",
+        "NodeViewModel 添加 PositionXText/PositionYText 格式化属性（F1 精度），通过 override OnPropertyChanged 在 X/Y 变化时联动通知",
+        "PropertiesPanel.xaml 在内容之后插入位置 Section，两列 Grid 分别展示 X/Y，绑定 SelectedNode.PositionXText 和 SelectedNode.PositionYText",
+        "修复了向左上方拖拽节点后其他节点视觉位置不更新、再次拖拽时节点跳位的 bug",
+        "根因：AddNodeControl 用 { DataContext = node } 直接绕过了 NodeControl.ViewModel setter，导致 PropertyChanged 从未被订阅，CheckAndShiftNodes() 修改 X/Y 后 Canvas.SetLeft/Top 不执行",
+        "修复方案：将 NodeEditorCanvas.AddNodeControl 中的 new() { DataContext = node } 改为 new() + nodeControl.ViewModel = node，同时移除冗余的 Canvas.SetLeft/Top 手动调用",
+        "修改文件：NodeEditorCanvas.xaml.cs 的 AddNodeControl 方法"
       ]
     },
     {

@@ -22,6 +22,7 @@ public sealed partial class NodeControl : UserControl
     }
 
     public event EventHandler<NodeViewModel>? NodeMoved;
+    public event EventHandler<NodeViewModel>? DragCompleted;
     public event EventHandler? PortsChanged;
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -195,6 +196,13 @@ public sealed partial class NodeControl : UserControl
 
         isDragging = false;
         ReleasePointerCapture(e.Pointer);
+        
+        // Notify that dragging is completed
+        if (ViewModel is not null)
+        {
+            DragCompleted?.Invoke(this, ViewModel);
+        }
+        
         e.Handled = true;
     }
 

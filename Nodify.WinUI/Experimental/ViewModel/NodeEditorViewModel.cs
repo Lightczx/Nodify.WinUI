@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,10 +16,16 @@ namespace Nodify.WinUI.Experimental.ViewModel;
 /// </summary>
 public sealed partial class NodeEditorViewModel : ObservableObject
 {
+    private bool _isUpdatingCanvasSize = false;
+    private bool _isShiftingNodes = false;
+
     public NodeEditorViewModel()
     {
         Nodes = [];
         Connections = [];
+
+        // Subscribe to collection changes to monitor node additions/removals
+        Nodes.CollectionChanged += OnNodesCollectionChanged;
 
         AddNodeCommand = new RelayCommand<Point>(AddNode);
         DeleteNodeCommand = new RelayCommand<NodeViewModel>(DeleteNode);
@@ -26,6 +34,9 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         ZoomInCommand = new RelayCommand(() => ViewportScale *= 1.2);
         ZoomOutCommand = new RelayCommand(() => ViewportScale /= 1.2);
         ResetViewCommand = new RelayCommand(ResetView);
+
+        // Initialize canvas size
+        UpdateCanvasSize();
     }
 
     public ObservableCollection<NodeViewModel> Nodes { get; }
@@ -43,6 +54,12 @@ public sealed partial class NodeEditorViewModel : ObservableObject
 
     [ObservableProperty]
     public partial double ViewportHeight { get; set; } = 600;
+
+    [ObservableProperty]
+    public partial double CanvasWidth { get; set; } = 2000;
+
+    [ObservableProperty]
+    public partial double CanvasHeight { get; set; } = 2000;
 
     public double ViewportScale
     {
@@ -113,6 +130,7 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         viewModel.AddOutputPort("Output 1");
 
         Nodes.Add(viewModel);
+        UpdateCanvasSize();
     }
 
     public void DeleteNode(NodeViewModel? node)
@@ -139,6 +157,7 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         }
 
         Nodes.Remove(node);
+        UpdateCanvasSize();
     }
 
     public void DeleteSelectedNode()
@@ -254,6 +273,74 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         }
     }
 
+    public void CheckAndShiftNodes()
+    {
+        if (Nodes.Count == 0)
+        {
+            return;
+        }
+
+        // Find minimum coordinates
+        double minX = double.MaxValue;
+        double minY = double.MaxValue;
+
+        foreach (NodeViewModel node in Nodes)
+        {
+            minX = Math.Min(minX, node.X);
+            minY = Math.Min(minY, node.Y);
+        }
+
+        // Calculate shift needed (with a small margin)
+        const double Margin = 50;
+        double shiftX = 0;
+        double shiftY = 0;
+
+        if (minX < 0)
+        {
+            shiftX = -minX + Margin;
+        }
+
+        if (minY < 0)
+        {
+            shiftY = -minY + Margin;
+        }
+
+        // Only shift if necessary
+        if (shiftX == 0 && shiftY == 0)
+        {
+            return;
+        }
+
+        // Set flag to prevent multiple canvas size updates
+        _isShiftingNodes = true;
+
+        try
+        {
+            // Shift all nodes
+            foreach (NodeViewModel node in Nodes)
+            {
+                node.X += shiftX;
+                node.Y += shiftY;
+            }
+
+            // Adjust viewport offset to maintain visual continuity.
+            // Nodes move right by shiftX in canvas space, so the viewport must
+            // shift left by shiftX * scale to keep them at the same screen position.
+            ViewportOffsetX -= shiftX * ViewportScale;
+            ViewportOffsetY -= shiftY * ViewportScale;
+
+            // Update connections
+            UpdateConnectionPositions();
+        }
+        finally
+        {
+            _isShiftingNodes = false;
+            
+            // Update canvas size once after all shifts
+            UpdateCanvasSize();
+        }
+    }
+
     private void ResetView()
     {
         ViewportOffsetX = 0;
@@ -315,5 +402,80 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         ViewportOffsetX = state.ViewportOffsetX;
         ViewportOffsetY = state.ViewportOffsetY;
         ViewportScale = state.ViewportScale;
+
+        UpdateCanvasSize();
+    }
+
+    private void OnNodesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Subscribe to new nodes
+        if (e.NewItems != null)
+        {
+            foreach (NodeViewModel node in e.NewItems)
+            {
+                node.PropertyChanged += OnNodePropertyChanged;
+            }
+        }
+
+        // Unsubscribe from removed nodes
+        if (e.OldItems != null)
+        {
+            foreach (NodeViewModel node in e.OldItems)
+            {
+                node.PropertyChanged -= OnNodePropertyChanged;
+            }
+        }
+
+        UpdateCanvasSize();
+    }
+
+    private void OnNodePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Skip updates when shifting nodes to avoid multiple canvas size updates
+        if (_isShiftingNodes)
+        {
+            return;
+        }
+
+        // Update canvas size when node position or size changes
+        if (e.PropertyName is nameof(NodeViewModel.X) or nameof(NodeViewModel.Y) 
+            or nameof(NodeViewModel.Width) or nameof(NodeViewModel.Height))
+        {
+            UpdateCanvasSize();
+        }
+    }
+
+    private void UpdateCanvasSize()
+    {
+        const double MinCanvasSize = 2000;
+        const double Padding = 500;
+
+        if (Nodes.Count == 0)
+        {
+            CanvasWidth = MinCanvasSize;
+            CanvasHeight = MinCanvasSize;
+            return;
+        }
+
+        double minX = double.MaxValue;
+        double minY = double.MaxValue;
+        double maxX = double.MinValue;
+        double maxY = double.MinValue;
+
+        foreach (NodeViewModel node in Nodes)
+        {
+            minX = Math.Min(minX, node.X);
+            minY = Math.Min(minY, node.Y);
+            maxX = Math.Max(maxX, node.X + node.Width);
+            maxY = Math.Max(maxY, node.Y + node.Height);
+        }
+
+        // Canvas starts at (0,0); negative coordinates are clipped and meaningless.
+        // Only size to fit the positive extent of all nodes.
+        double requiredWidth = Math.Max(maxX, 0) + Padding;
+        double requiredHeight = Math.Max(maxY, 0) + Padding;
+
+        CanvasWidth = Math.Max(MinCanvasSize, requiredWidth);
+        CanvasHeight = Math.Max(MinCanvasSize, requiredHeight);
     }
 }

@@ -17,10 +17,15 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid">
+        <Grid.Clip>
+            <RectangleGeometry x:Name="RootGridClip" />
+        </Grid.Clip>
         <!--  Main Canvas with Transform  -->
         <Canvas
             x:Name="MainCanvas"
-            Background="Transparent"
+            Width="{x:Bind ViewModel.CanvasWidth, Mode=OneWay}"
+            Height="{x:Bind ViewModel.CanvasHeight, Mode=OneWay}"
+            Background="#80000000"
             DoubleTapped="OnMainCanvasDoubleTapped"
             PointerMoved="OnMainCanvasPointerMoved"
             PointerPressed="OnMainCanvasPointerPressed"

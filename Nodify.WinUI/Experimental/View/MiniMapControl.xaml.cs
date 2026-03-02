@@ -29,6 +29,12 @@ public sealed partial class MiniMapControl : UserControl
             {
                 @field.Nodes.CollectionChanged -= OnViewModelNodesCollectionChanged;
                 @field.PropertyChanged -= OnViewModelPropertyChanged;
+                
+                // Unsubscribe from all existing nodes
+                foreach (NodeViewModel node in @field.Nodes)
+                {
+                    node.PropertyChanged -= OnNodePropertyChanged;
+                }
             }
 
             @field = value;
@@ -38,6 +44,13 @@ public sealed partial class MiniMapControl : UserControl
             {
                 @field.Nodes.CollectionChanged += OnViewModelNodesCollectionChanged;
                 @field.PropertyChanged += OnViewModelPropertyChanged;
+                
+                // Subscribe to all existing nodes
+                foreach (NodeViewModel node in @field.Nodes)
+                {
+                    node.PropertyChanged += OnNodePropertyChanged;
+                }
+                
                 UpdateMiniMap();
             }
         }
@@ -45,6 +58,24 @@ public sealed partial class MiniMapControl : UserControl
 
     private void OnViewModelNodesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
+        // Subscribe to new nodes
+        if (e.NewItems is not null)
+        {
+            foreach (NodeViewModel node in e.NewItems)
+            {
+                node.PropertyChanged += OnNodePropertyChanged;
+            }
+        }
+
+        // Unsubscribe from removed nodes
+        if (e.OldItems is not null)
+        {
+            foreach (NodeViewModel node in e.OldItems)
+            {
+                node.PropertyChanged -= OnNodePropertyChanged;
+            }
+        }
+
         UpdateMiniMap();
     }
 
@@ -58,6 +89,18 @@ public sealed partial class MiniMapControl : UserControl
             or nameof(NodeEditorViewModel.ViewportHeight))
         {
             UpdateViewportRect();
+        }
+    }
+
+    private void OnNodePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName
+            is nameof(NodeViewModel.X)
+            or nameof(NodeViewModel.Y)
+            or nameof(NodeViewModel.Width)
+            or nameof(NodeViewModel.Height))
+        {
+            UpdateMiniMap();
         }
     }
 

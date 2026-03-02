@@ -15,7 +15,6 @@ using Windows.Storage;
 using Windows.System;
 using Windows.UI.Core;
 using Nodify.WinUI.Experimental.Model;
-using WinRT;
 
 namespace Nodify.WinUI.Experimental.View;
 
@@ -77,6 +76,8 @@ public sealed partial class NodeEditorCanvas : UserControl
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
+        RootGridClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+
         if (ViewModel is not null)
         {
             ViewModel.ViewportWidth = e.NewSize.Width;
@@ -201,19 +202,20 @@ public sealed partial class NodeEditorCanvas : UserControl
 
     private void AddNodeControl(NodeViewModel node)
     {
-        NodeControl nodeControl = new() { DataContext = node };
+        // Use ViewModel setter (not DataContext directly) so NodeControl subscribes
+        // to PropertyChanged and keeps Canvas.Left/Top in sync when X/Y change externally
+        // (e.g. when CheckAndShiftNodes() shifts all nodes after a drag to negative coords).
+        NodeControl nodeControl = new();
+        nodeControl.ViewModel = node;
+
         nodeControl.NodeMoved += OnNodeControlNodeMoved;
+        nodeControl.DragCompleted += OnNodeControlDragCompleted;
         nodeControl.PortsChanged += OnNodeControlPortsChanged;
 
-        // Subscribe to selection changes
+        // Subscribe to selection changes (separate from NodeControl's own subscription)
         node.PropertyChanged += OnNodeViewModelPropertyChanged;
 
-        // Subscribe to port events
         nodeControl.Loaded += OnNodeControlLoaded;
-
-        // Set initial position immediately
-        Canvas.SetLeft(nodeControl, node.X);
-        Canvas.SetTop(nodeControl, node.Y);
 
         NodesCanvas.Children.Add(nodeControl);
     }
@@ -221,6 +223,11 @@ public sealed partial class NodeEditorCanvas : UserControl
     private void OnNodeControlNodeMoved(object? sender, NodeViewModel node)
     {
         ViewModel?.UpdateConnectionPositions();
+    }
+
+    private void OnNodeControlDragCompleted(object? sender, NodeViewModel node)
+    {
+        ViewModel?.CheckAndShiftNodes();
     }
 
     private void OnNodeControlLoaded(object sender, RoutedEventArgs e)

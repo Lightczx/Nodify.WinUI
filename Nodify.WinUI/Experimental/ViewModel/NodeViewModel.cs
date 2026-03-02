@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -76,6 +77,26 @@ public sealed partial class NodeViewModel : ObservableObject
     {
         get => model.Height;
         set => SetProperty(model.Height, value, model, static (m, v) => m.Height = v);
+    }
+
+    /// <summary>格式化后的 X 坐标，供属性面板只读展示</summary>
+    public string PositionXText => $"{X:F1}";
+
+    /// <summary>格式化后的 Y 坐标，供属性面板只读展示</summary>
+    public string PositionYText => $"{Y:F1}";
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName is nameof(X))
+        {
+            OnPropertyChanged(nameof(PositionXText));
+        }
+        else if (e.PropertyName is nameof(Y))
+        {
+            OnPropertyChanged(nameof(PositionYText));
+        }
     }
 
     [ObservableProperty]

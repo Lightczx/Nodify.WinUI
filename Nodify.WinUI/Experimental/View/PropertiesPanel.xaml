@@ -43,6 +43,34 @@
                         TextWrapping="Wrap" />
                 </StackPanel>
 
+                <!--  Node Position  -->
+                <StackPanel Spacing="4">
+                    <TextBlock FontWeight="SemiBold" Text="位置" />
+                    <Grid
+                        Padding="8"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="X" />
+                            <TextBlock Text="{Binding SelectedNode.PositionXText}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Y" />
+                            <TextBlock Text="{Binding SelectedNode.PositionYText}" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
                 <!--  Input Ports Section  -->
                 <StackPanel Spacing="8">
                     <Grid>
