@@ -19,6 +19,7 @@ public sealed partial class NodeControl : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        SizeChanged += OnSizeChanged;
     }
 
     public event EventHandler<NodeViewModel>? NodeMoved;
@@ -27,8 +28,18 @@ public sealed partial class NodeControl : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        // Update port positions after the node is loaded
         UpdatePortPositions();
+    }
+
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        ViewModel.Width = e.NewSize.Width;
+        ViewModel.Height = e.NewSize.Height;
     }
 
     public NodeViewModel? ViewModel

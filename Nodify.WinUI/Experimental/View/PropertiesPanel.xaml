@@ -38,6 +38,7 @@
                     <TextBox
                         MinHeight="60"
                         AcceptsReturn="True"
+                        IsSpellCheckEnabled="False"
                         PlaceholderText="输入节点内容..."
                         Text="{Binding SelectedNode.Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         TextWrapping="Wrap" />

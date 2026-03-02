@@ -25,10 +25,10 @@ public class NodeModel
     [JsonPropertyName("positionY")]
     public double PositionY { get; set; }
 
-    [JsonPropertyName("width")]
+    [JsonIgnore]
     public double Width { get; set; }
 
-    [JsonPropertyName("height")]
+    [JsonIgnore]
     public double Height { get; set; }
 
     [JsonPropertyName("inputPorts")]
@@ -55,8 +55,8 @@ public class NodeModel
             Id = Guid.NewGuid(),
             Title = "New Node",
             Content = "",
-            Width = 200,
-            Height = 150,
+            Width = 0,
+            Height = 0,
             InputPorts = [],
             OutputPorts = [],
         };
@@ -71,8 +71,8 @@ public class NodeModel
             Content = content,
             PositionX = x,
             PositionY = y,
-            Width = 200,
-            Height = 150,
+            Width = 0,
+            Height = 0,
             InputPorts = [],
             OutputPorts = [],
         };

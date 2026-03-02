@@ -14,7 +14,7 @@
     <Border
         Width="200"
         Height="150"
-        Background="{ThemeResource SystemControlAcrylicElementMediumHighBrush}"
+        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
         BorderThickness="1"
         CornerRadius="4">
