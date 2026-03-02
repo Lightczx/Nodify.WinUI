@@ -13,21 +13,33 @@ public sealed partial class PortControl : UserControl
     public PortControl()
     {
         InitializeComponent();
-        DataContextChanged += OnDataContextChanged;
         Loaded += OnLoaded;
     }
 
     public event EventHandler<PortViewModel?>? ConnectionStarted;
     public event EventHandler<PortViewModel?>? ConnectionCompleted;
 
-    public PortViewModel? ViewModel { get => DataContext as PortViewModel; }
-
-    public void UpdatePosition()
+    public PortViewModel? ViewModel
     {
-        UpdatePortPosition();
+        get;
+        set
+        {
+            if (field is not null)
+            {
+                // No events to unsubscribe for PortViewModel currently
+            }
+
+            field = value;
+            DataContext = value;
+
+            if (field is not null)
+            {
+                UpdatePortPosition();
+            }
+        }
     }
 
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+    public void UpdatePosition()
     {
         UpdatePortPosition();
     }

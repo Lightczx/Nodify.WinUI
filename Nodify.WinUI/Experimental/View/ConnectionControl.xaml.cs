@@ -13,12 +13,30 @@ public sealed partial class ConnectionControl : UserControl
     public ConnectionControl()
     {
         InitializeComponent();
-        DataContextChanged += OnDataContextChanged;
     }
 
     public event EventHandler<ConnectionViewModel?>? ConnectionRemoved;
 
-    public ConnectionViewModel? ViewModel { get => DataContext as ConnectionViewModel; }
+    public ConnectionViewModel? ViewModel
+    {
+        get;
+        set
+        {
+            if (field is not null)
+            {
+                field.PropertyChanged -= OnViewModelPropertyChanged;
+            }
+
+            field = value;
+            DataContext = value;
+
+            if (field is not null)
+            {
+                field.PropertyChanged += OnViewModelPropertyChanged;
+                UpdatePath();
+            }
+        }
+    }
 
     private static bool IsValidPoint(Point point)
     {
@@ -56,17 +74,6 @@ public sealed partial class ConnectionControl : UserControl
         pathGeometry.Figures.Add(pathFigure);
 
         return pathGeometry;
-    }
-
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-    {
-        if (ViewModel is null)
-        {
-            return;
-        }
-
-        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        UpdatePath();
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

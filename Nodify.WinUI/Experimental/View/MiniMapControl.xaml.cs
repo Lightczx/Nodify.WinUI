@@ -17,21 +17,29 @@ public sealed partial class MiniMapControl : UserControl
     public MiniMapControl()
     {
         InitializeComponent();
-        DataContextChanged += OnDataContextChanged;
     }
 
-    public NodeEditorViewModel? ViewModel { get => DataContext as NodeEditorViewModel; }
-
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+    public NodeEditorViewModel? ViewModel
     {
-        if (ViewModel is null)
+        get;
+        set
         {
-            return;
-        }
+            if (field is not null)
+            {
+                field.Nodes.CollectionChanged -= OnViewModelNodesCollectionChanged;
+                field.PropertyChanged -= OnViewModelPropertyChanged;
+            }
 
-        ViewModel.Nodes.CollectionChanged += OnViewModelNodesCollectionChanged;
-        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        UpdateMiniMap();
+            field = value;
+            DataContext = value;
+
+            if (field is not null)
+            {
+                field.Nodes.CollectionChanged += OnViewModelNodesCollectionChanged;
+                field.PropertyChanged += OnViewModelPropertyChanged;
+                UpdateMiniMap();
+            }
+        }
     }
 
     private void OnViewModelNodesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

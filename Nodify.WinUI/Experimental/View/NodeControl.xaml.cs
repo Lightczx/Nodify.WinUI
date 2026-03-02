@@ -16,12 +16,31 @@ public sealed partial class NodeControl : UserControl
     public NodeControl()
     {
         InitializeComponent();
-        DataContextChanged += OnDataContextChanged;
     }
 
     public event EventHandler<NodeViewModel>? NodeMoved;
 
-    public NodeViewModel? ViewModel { get => DataContext as NodeViewModel; }
+    public NodeViewModel? ViewModel
+    {
+        get;
+        set
+        {
+            if (field is not null)
+            {
+                field.PropertyChanged -= OnViewModelPropertyChanged;
+            }
+
+            field = value;
+            DataContext = value;
+
+            if (field is not null)
+            {
+                field.PropertyChanged += OnViewModelPropertyChanged;
+                Canvas.SetLeft(this, field.X);
+                Canvas.SetTop(this, field.Y);
+            }
+        }
+    }
 
     public void UpdatePortPositions()
     {
@@ -56,15 +75,21 @@ public sealed partial class NodeControl : UserControl
         }
     }
 
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (ViewModel is null)
         {
             return;
         }
 
-        Canvas.SetLeft(this, ViewModel.X);
-        Canvas.SetTop(this, ViewModel.Y);
+        if (e.PropertyName is nameof(NodeViewModel.X))
+        {
+            Canvas.SetLeft(this, ViewModel.X);
+        }
+        else if (e.PropertyName is nameof(NodeViewModel.Y))
+        {
+            Canvas.SetTop(this, ViewModel.Y);
+        }
     }
 
     private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
