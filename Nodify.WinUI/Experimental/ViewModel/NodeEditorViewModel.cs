@@ -290,18 +290,18 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         }
 
         // Calculate shift needed (with a small margin)
-        const double Margin = 50;
+        const double Margin = 48;
         double shiftX = 0;
         double shiftY = 0;
 
-        if (minX < 0)
+        if (minX < Margin)
         {
-            shiftX = -minX + Margin;
+            shiftX = Margin - minX;
         }
 
-        if (minY < 0)
+        if (minY < Margin)
         {
-            shiftY = -minY + Margin;
+            shiftY = Margin - minY;
         }
 
         // Only shift if necessary
@@ -447,7 +447,7 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     private void UpdateCanvasSize()
     {
         const double DefaultSize = 200;
-        const double Margin = 200;
+        const double Margin = 48;
 
         if (Nodes.Count == 0)
         {
