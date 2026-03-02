@@ -53,7 +53,9 @@ public sealed partial class MiniMapControl : UserControl
         if (e.PropertyName
             is nameof(NodeEditorViewModel.ViewportOffsetX)
             or nameof(NodeEditorViewModel.ViewportOffsetY)
-            or nameof(NodeEditorViewModel.ViewportScale))
+            or nameof(NodeEditorViewModel.ViewportScale)
+            or nameof(NodeEditorViewModel.ViewportWidth)
+            or nameof(NodeEditorViewModel.ViewportHeight))
         {
             UpdateViewportRect();
         }
@@ -101,12 +103,8 @@ public sealed partial class MiniMapControl : UserControl
             return;
         }
 
-        // Assume a viewport size (this should ideally come from the actual canvas size)
-        const double ViewportWidth = 800;
-        const double ViewportHeight = 600;
-
-        ViewportRect.Width = (ViewportWidth / ViewModel.ViewportScale) * MiniMapScale;
-        ViewportRect.Height = (ViewportHeight / ViewModel.ViewportScale) * MiniMapScale;
+        ViewportRect.Width = (ViewModel.ViewportWidth / ViewModel.ViewportScale) * MiniMapScale;
+        ViewportRect.Height = (ViewModel.ViewportHeight / ViewModel.ViewportScale) * MiniMapScale;
 
         Canvas.SetLeft(ViewportRect, -ViewModel.ViewportOffsetX * MiniMapScale);
         Canvas.SetTop(ViewportRect, -ViewModel.ViewportOffsetY * MiniMapScale);

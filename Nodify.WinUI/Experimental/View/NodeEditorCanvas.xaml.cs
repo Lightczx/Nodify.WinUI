@@ -72,6 +72,16 @@ public sealed partial class NodeEditorCanvas : UserControl
     public NodeEditorCanvas()
     {
         InitializeComponent();
+        SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (ViewModel is not null)
+        {
+            ViewModel.ViewportWidth = e.NewSize.Width;
+            ViewModel.ViewportHeight = e.NewSize.Height;
+        }
     }
 
     private static List<PortControl> FindPortControls(DependencyObject parent)

@@ -38,6 +38,12 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     [ObservableProperty]
     public partial double ViewportOffsetY { get; set; }
 
+    [ObservableProperty]
+    public partial double ViewportWidth { get; set; } = 800;
+
+    [ObservableProperty]
+    public partial double ViewportHeight { get; set; } = 600;
+
     public double ViewportScale
     {
         get;
