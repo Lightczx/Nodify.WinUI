@@ -156,7 +156,10 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         }
 
         ConnectionModel model = ConnectionModel.Create();
-        PendingConnection = new(model);
+        PendingConnection = new(model)
+        {
+            IsSelected = false // Ensure pending connection is not selected
+        };
 
         if (port.Direction == PortDirection.Output)
         {

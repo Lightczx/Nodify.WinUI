@@ -58,7 +58,34 @@
         "端口位置相对于 NodesCanvas 计算，使用 TransformToVisual 获取绝对坐标",
         "ConnectionViewModel 订阅端口 Position 变化自动更新连线路径"
       ]
+    },
+    {
+      "name": "Nodify.WinUI Project",
+      "entityType": "project",
+      "observations": [
+        "WinUI 3 节点编辑器控件项目",
+        "使用 C# 和 XAML 开发",
+        "支持节点拖拽、连线、缩放、平移等功能",
+        "使用 MVVM 架构模式"
+      ]
+    },
+    {
+      "name": "Connection Line Issue",
+      "entityType": "bug_fix",
+      "observations": [
+        "问题：从端口拖出连线时有时会显示成粗线（选中状态）",
+        "原因：PendingConnection 的 IsSelected 属性未明确设置为 false",
+        "解决方案1：在 NodeEditorViewModel.StartConnection() 中明确设置 IsSelected = false",
+        "解决方案2：在 ConnectionControl.UpdatePath() 中优化 SelectionPath 的显示逻辑，只在 IsSelected 为 true 时创建和显示",
+        "修改文件：NodeEditorViewModel.cs 和 ConnectionControl.xaml.cs"
+      ]
     }
   ],
-  "relations": []
+  "relations": [
+    {
+      "from": "Connection Line Issue",
+      "to": "Nodify.WinUI Project",
+      "relationType": "belongs_to"
+    }
+  ]
 }

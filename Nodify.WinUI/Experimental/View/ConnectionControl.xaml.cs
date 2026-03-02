@@ -103,13 +103,21 @@ public sealed partial class ConnectionControl : UserControl
             return;
         }
 
+        // Always reset SelectionPath visibility first to prevent flickering
+        SelectionPath.Visibility = Visibility.Collapsed;
+        SelectionPath.Data = null;
+
         // In WinUI 3, each Path needs its own Geometry instance
         ConnectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
-        SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
-
-        SelectionPath.Visibility = ViewModel.IsSelected ? Visibility.Visible : Visibility.Collapsed;
         
-        System.Diagnostics.Debug.WriteLine($"[ConnectionControl] UpdatePath - Path updated from ({ViewModel.SourcePoint.X:F2}, {ViewModel.SourcePoint.Y:F2}) to ({ViewModel.TargetPoint.X:F2}, {ViewModel.TargetPoint.Y:F2})");
+        // Only update SelectionPath if the connection is selected
+        if (ViewModel.IsSelected)
+        {
+            SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
+            SelectionPath.Visibility = Visibility.Visible;
+        }
+        
+        System.Diagnostics.Debug.WriteLine($"[ConnectionControl] UpdatePath - Path updated from ({ViewModel.SourcePoint.X:F2}, {ViewModel.SourcePoint.Y:F2}) to ({ViewModel.TargetPoint.X:F2}, {ViewModel.TargetPoint.Y:F2}), IsSelected: {ViewModel.IsSelected}");
     }
 
     private void OnConnectionPathPointerEntered(object sender, PointerRoutedEventArgs e)

@@ -38,7 +38,7 @@
             <Canvas x:Name="ConnectionsCanvas" IsHitTestVisible="True"/>
 
             <!-- Pending Connection -->
-            <view:ConnectionControl x:Name="PendingConnectionControl" Visibility="Collapsed"/>
+            <view:ConnectionControl x:Name="PendingConnectionControl" Visibility="Collapsed" IsHitTestVisible="False"/>
 
             <!-- Nodes Layer -->
             <Canvas x:Name="NodesCanvas"/>
