@@ -2,26 +2,26 @@
     x:Class="Nodify.WinUI.Experimental.View.NodeControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
+    xmlns:cwc="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:view="using:Nodify.WinUI.Experimental.View"
-    xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
-    xmlns:cwc="using:CommunityToolkit.WinUI.Converters"
-    mc:Ignorable="d"
     Width="{Binding Width}"
     Height="{Binding Height}"
-    PointerPressed="OnPointerPressed"
     PointerMoved="OnPointerMoved"
-    PointerReleased="OnPointerReleased">
+    PointerPressed="OnPointerPressed"
+    PointerReleased="OnPointerReleased"
+    mc:Ignorable="d">
 
     <UserControl.Resources>
-        <cwc:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <cwc:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
         <Style x:Key="PortItemsControlStyle" TargetType="ItemsControl">
             <Setter Property="ItemTemplate">
                 <Setter.Value>
                     <DataTemplate>
-                        <view:PortControl Margin="4,2"/>
+                        <view:PortControl Margin="4,2" />
                     </DataTemplate>
                 </Setter.Value>
             </Setter>
@@ -35,70 +35,71 @@
             BorderThickness="2"
             CornerRadius="8">
             <Border.Shadow>
-                <ThemeShadow/>
+                <ThemeShadow />
             </Border.Shadow>
         </Border>
 
-        <!-- Selected State Border -->
+        <!--  Selected State Border  -->
         <Border
             BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
             BorderThickness="3"
             CornerRadius="8"
-            Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <Grid Margin="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Title Bar -->
-            <Grid Grid.Row="0"
-                  Background="{ThemeResource AccentFillColorDefaultBrush}"
-                  CornerRadius="6,6,0,0"
-                  Padding="8,4"
-                  x:Name="TitleBar">
+            <!--  Title Bar  -->
+            <Grid
+                x:Name="TitleBar"
+                Grid.Row="0"
+                Padding="8,4"
+                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                CornerRadius="6,6,0,0">
                 <TextBlock
-                    Text="{Binding Title}"
+                    VerticalAlignment="Center"
                     FontWeight="SemiBold"
                     Foreground="White"
-                    VerticalAlignment="Center"/>
+                    Text="{Binding Title}" />
             </Grid>
 
-            <!-- Content Area -->
+            <!--  Content Area  -->
             <Grid Grid.Row="1" Padding="8">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Input Ports -->
+                <!--  Input Ports  -->
                 <ItemsControl
+                    x:Name="InputPortsControl"
                     Grid.Column="0"
-                    ItemsSource="{Binding InputPorts}"
-                    Style="{StaticResource PortItemsControlStyle}"
                     VerticalAlignment="Center"
-                    x:Name="InputPortsControl"/>
+                    ItemsSource="{Binding InputPorts}"
+                    Style="{StaticResource PortItemsControlStyle}" />
 
-                <!-- Content -->
+                <!--  Content  -->
                 <TextBlock
                     Grid.Column="1"
-                    Text="{Binding Content}"
-                    TextWrapping="Wrap"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
                     Margin="8,0"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-
-                <!-- Output Ports -->
-                <ItemsControl
-                    Grid.Column="2"
-                    ItemsSource="{Binding OutputPorts}"
-                    Style="{StaticResource PortItemsControlStyle}"
+                    HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    x:Name="OutputPortsControl"/>
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{Binding Content}"
+                    TextWrapping="Wrap" />
+
+                <!--  Output Ports  -->
+                <ItemsControl
+                    x:Name="OutputPortsControl"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    ItemsSource="{Binding OutputPorts}"
+                    Style="{StaticResource PortItemsControlStyle}" />
             </Grid>
         </Grid>
     </Grid>

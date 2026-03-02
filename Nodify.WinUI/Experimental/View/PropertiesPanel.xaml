@@ -2,15 +2,15 @@
     x:Class="Nodify.WinUI.Experimental.View.PropertiesPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
     xmlns:cwc="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <converters:EmptyObjectToVisibilityConverter x:Key="EmptyObjectToVisibilityConverter"/>
-        <converters:EmptyObjectToVisibilityInverseConverter x:Key="EmptyObjectToVisibilityInverseConverter"/>
+        <converters:EmptyObjectToVisibilityConverter x:Key="EmptyObjectToVisibilityConverter" />
+        <converters:EmptyObjectToVisibilityInverseConverter x:Key="EmptyObjectToVisibilityInverseConverter" />
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Background="{ThemeResource LayerFillColorDefaultBrush}">
@@ -20,157 +20,161 @@
                 Spacing="16"
                 Visibility="{Binding SelectedNode, Converter={StaticResource EmptyObjectToVisibilityConverter}}">
 
-                <!-- Header -->
+                <!--  Header  -->
                 <TextBlock
-                    Text="节点属性"
+                    Margin="0,0,0,8"
                     Style="{StaticResource TitleTextBlockStyle}"
-                    Margin="0,0,0,8"/>
+                    Text="节点属性" />
 
-                <!-- Node Title -->
+                <!--  Node Title  -->
                 <StackPanel Spacing="4">
-                    <TextBlock Text="标题" FontWeight="SemiBold"/>
-                    <TextBox
-                        Text="{Binding SelectedNode.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        PlaceholderText="输入节点标题..."/>
+                    <TextBlock FontWeight="SemiBold" Text="标题" />
+                    <TextBox PlaceholderText="输入节点标题..." Text="{Binding SelectedNode.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
-                <!-- Node Content -->
+                <!--  Node Content  -->
                 <StackPanel Spacing="4">
-                    <TextBlock Text="内容" FontWeight="SemiBold"/>
+                    <TextBlock FontWeight="SemiBold" Text="内容" />
                     <TextBox
-                        Text="{Binding SelectedNode.Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        PlaceholderText="输入节点内容..."
+                        MinHeight="60"
                         AcceptsReturn="True"
-                        TextWrapping="Wrap"
-                        MinHeight="60"/>
+                        PlaceholderText="输入节点内容..."
+                        Text="{Binding SelectedNode.Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap" />
                 </StackPanel>
 
-                <!-- Input Ports Section -->
+                <!--  Input Ports Section  -->
                 <StackPanel Spacing="8">
                     <Grid>
-                        <TextBlock Text="输入端口" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="输入端口" />
                         <Button
-                            Content="+"
-                            Command="{Binding SelectedNode.AddInputPortCommand}"
-                            HorizontalAlignment="Right"
                             Width="32"
                             Height="32"
-                            ToolTipService.ToolTip="添加输入端口"/>
+                            HorizontalAlignment="Right"
+                            Command="{Binding SelectedNode.AddInputPortCommand}"
+                            Content="+"
+                            ToolTipService.ToolTip="添加输入端口" />
                     </Grid>
 
                     <ItemsControl ItemsSource="{Binding SelectedNode.InputPorts}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    Margin="0,4"
                                     Padding="8"
-                                    CornerRadius="4"
-                                    Margin="0,4">
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <TextBox
                                         Grid.Column="0"
-                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
                                         PlaceholderText="端口名称..."
-                                        Margin="0,0,8,0"/>
+                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <Button
                                         Grid.Column="1"
-                                        Content="&#xE74D;"
-                                        FontFamily="Segoe MDL2 Assets"
-                                        Command="{Binding DataContext.SelectedNode.RemovePortCommand, ElementName=RootGrid}"
-                                        CommandParameter="{Binding}"
                                         Width="32"
                                         Height="32"
-                                        ToolTipService.ToolTip="删除端口"/>
+                                        Command="{Binding DataContext.SelectedNode.RemovePortCommand, ElementName=RootGrid}"
+                                        CommandParameter="{Binding}"
+                                        Content="&#xE74D;"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        ToolTipService.ToolTip="删除端口" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
 
-                <!-- Output Ports Section -->
+                <!--  Output Ports Section  -->
                 <StackPanel Spacing="8">
                     <Grid>
-                        <TextBlock Text="输出端口" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="输出端口" />
                         <Button
-                            Content="+"
-                            Command="{Binding SelectedNode.AddOutputPortCommand}"
-                            HorizontalAlignment="Right"
                             Width="32"
                             Height="32"
-                            ToolTipService.ToolTip="添加输出端口"/>
+                            HorizontalAlignment="Right"
+                            Command="{Binding SelectedNode.AddOutputPortCommand}"
+                            Content="+"
+                            ToolTipService.ToolTip="添加输出端口" />
                     </Grid>
 
                     <ItemsControl ItemsSource="{Binding SelectedNode.OutputPorts}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    Margin="0,4"
                                     Padding="8"
-                                    CornerRadius="4"
-                                    Margin="0,4">
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <TextBox
                                         Grid.Column="0"
-                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
                                         PlaceholderText="端口名称..."
-                                        Margin="0,0,8,0"/>
+                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <Button
                                         Grid.Column="1"
-                                        Content="&#xE74D;"
-                                        FontFamily="Segoe MDL2 Assets"
-                                        Command="{Binding DataContext.SelectedNode.RemovePortCommand, ElementName=RootGrid}"
-                                        CommandParameter="{Binding}"
                                         Width="32"
                                         Height="32"
-                                        ToolTipService.ToolTip="删除端口"/>
+                                        Command="{Binding DataContext.SelectedNode.RemovePortCommand, ElementName=RootGrid}"
+                                        CommandParameter="{Binding}"
+                                        Content="&#xE74D;"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        ToolTipService.ToolTip="删除端口" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
 
-                <!-- Node Actions -->
+                <!--  Node Actions  -->
                 <StackPanel Spacing="8">
-                    <TextBlock Text="操作" FontWeight="SemiBold"/>
+                    <TextBlock FontWeight="SemiBold" Text="操作" />
                     <Button
-                        Content="删除节点"
-                        Command="{Binding DeleteSelectedNodeCommand}"
                         HorizontalAlignment="Stretch"
-                        Background="{ThemeResource SystemFillColorCriticalBrush}"/>
+                        Background="{ThemeResource SystemFillColorCriticalBrush}"
+                        Command="{Binding DeleteSelectedNodeCommand}"
+                        Content="删除节点" />
                 </StackPanel>
 
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Empty State -->
+        <!--  Empty State  -->
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="8"
             Visibility="{Binding SelectedNode, Converter={StaticResource EmptyObjectToVisibilityInverseConverter}}">
             <FontIcon
-                Glyph="&#xE946;"
                 FontSize="48"
-                Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
-            <TextBlock
-                Text="未选中节点"
                 Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                HorizontalAlignment="Center"/>
+                Glyph="&#xE946;" />
             <TextBlock
-                Text="点击节点查看属性"
+                HorizontalAlignment="Center"
                 Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                Text="未选中节点" />
+            <TextBlock
+                HorizontalAlignment="Center"
                 FontSize="12"
-                HorizontalAlignment="Center"/>
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                Text="点击节点查看属性" />
         </StackPanel>
     </Grid>
 </UserControl>

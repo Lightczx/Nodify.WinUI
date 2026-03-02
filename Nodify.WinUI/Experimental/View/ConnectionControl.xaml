@@ -4,27 +4,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    IsHitTestVisible="True">
+    IsHitTestVisible="True"
+    mc:Ignorable="d">
 
     <Grid>
         <Path
             x:Name="ConnectionPath"
-            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
-            StrokeThickness="3"
-            StrokeStartLineCap="Round"
-            StrokeEndLineCap="Round"
+            DoubleTapped="OnConnectionPathDoubleTapped"
             PointerEntered="OnConnectionPathPointerEntered"
             PointerExited="OnConnectionPathPointerExited"
-            DoubleTapped="OnConnectionPathDoubleTapped"/>
+            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+            StrokeEndLineCap="Round"
+            StrokeStartLineCap="Round"
+            StrokeThickness="3" />
 
-        <!-- Selected State -->
+        <!--  Selected State  -->
         <Path
             x:Name="SelectionPath"
+            IsHitTestVisible="False"
+            Opacity="0.5"
             Stroke="{ThemeResource SystemFillColorCriticalBrush}"
             StrokeThickness="5"
-            Opacity="0.5"
-            Visibility="Collapsed"
-            IsHitTestVisible="False"/>
+            Visibility="Collapsed" />
     </Grid>
 </UserControl>

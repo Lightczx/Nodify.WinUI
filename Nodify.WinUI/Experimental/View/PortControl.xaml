@@ -4,30 +4,30 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     Width="16"
-    Height="16">
+    Height="16"
+    mc:Ignorable="d">
 
     <Grid>
-        <Ellipse 
+        <Ellipse
             x:Name="PortEllipse"
-            Fill="{ThemeResource AccentFillColorDefaultBrush}"
-            Stroke="{ThemeResource ControlStrokeColorDefaultBrush}"
-            StrokeThickness="2"
             Width="16"
             Height="16"
+            Fill="{ThemeResource AccentFillColorDefaultBrush}"
             PointerEntered="OnPortEllipsePointerEntered"
             PointerExited="OnPortEllipsePointerExited"
             PointerPressed="OnPortEllipsePointerPressed"
-            PointerReleased="OnPortEllipsePointerReleased"/>
-        
+            PointerReleased="OnPortEllipsePointerReleased"
+            Stroke="{ThemeResource ControlStrokeColorDefaultBrush}"
+            StrokeThickness="2" />
+
         <ToolTipService.ToolTip>
             <ToolTip>
                 <TextBlock>
-                    <Run Text="{Binding Name}"/>
-                    <Run Text=" ("/>
-                    <Run Text="{Binding Type}"/>
-                    <Run Text=")"/>
+                    <Run Text="{Binding Name}" />
+                    <Run Text=" (" />
+                    <Run Text="{Binding Type}" />
+                    <Run Text=")" />
                 </TextBlock>
             </ToolTip>
         </ToolTipService.ToolTip>
