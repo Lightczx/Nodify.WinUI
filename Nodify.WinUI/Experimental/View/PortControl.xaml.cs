@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
+using Nodify.WinUI.Experimental.Model;
 using Nodify.WinUI.Experimental.ViewModel;
 using Windows.Foundation;
 
@@ -100,8 +102,10 @@ public sealed partial class PortControl : UserControl
                 return;
             }
 
-            // Get the center position of the port in canvas coordinates
-            Point position = TransformToVisual(canvas).TransformPoint(new(8, 8)); // Center of the ellipse
+            // 根据方向选取对应椭圆，计算其中心在 canvas 坐标系中的位置
+            Ellipse activeEllipse = ViewModel.Direction == PortDirection.Input ? PortEllipse : PortEllipseOutput;
+            Point ellipseCenter = new(activeEllipse.ActualWidth / 2, activeEllipse.ActualHeight / 2);
+            Point position = activeEllipse.TransformToVisual(canvas).TransformPoint(ellipseCenter);
 
             // Check if position actually changed from last known position
             if (double.IsNaN(lastKnownPosition.X) ||
@@ -155,14 +159,18 @@ public sealed partial class PortControl : UserControl
 
     private void OnPortEllipsePointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        PortEllipse.Width = 20;
-        PortEllipse.Height = 20;
+        if (sender is Ellipse ellipse)
+        {
+            ellipse.Fill = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorTertiaryBrush"];
+        }
     }
 
     private void OnPortEllipsePointerExited(object sender, PointerRoutedEventArgs e)
     {
-        PortEllipse.Width = 16;
-        PortEllipse.Height = 16;
+        if (sender is Ellipse ellipse)
+        {
+            ellipse.Fill = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+        }
     }
 
     private void OnPortEllipsePointerPressed(object sender, PointerRoutedEventArgs e)

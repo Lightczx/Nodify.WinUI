@@ -2,34 +2,83 @@
     x:Class="Nodify.WinUI.Experimental.View.PortControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="16"
-    Height="16"
     mc:Ignorable="d">
 
-    <Grid>
-        <Ellipse
-            x:Name="PortEllipse"
-            Width="16"
-            Height="16"
-            Fill="{ThemeResource AccentFillColorDefaultBrush}"
-            PointerEntered="OnPortEllipsePointerEntered"
-            PointerExited="OnPortEllipsePointerExited"
-            PointerPressed="OnPortEllipsePointerPressed"
-            PointerReleased="OnPortEllipsePointerReleased"
-            Stroke="{ThemeResource ControlStrokeColorDefaultBrush}"
-            StrokeThickness="2" />
+    <UserControl.Resources>
+        <converters:PortDirectionToVisibilityConverter x:Key="PortDirectionToVisibilityConverter" />
+    </UserControl.Resources>
 
-        <ToolTipService.ToolTip>
-            <ToolTip>
-                <TextBlock>
-                    <Run Text="{Binding Name}" />
-                    <Run Text=" (" />
-                    <Run Text="{Binding Type}" />
-                    <Run Text=")" />
-                </TextBlock>
-            </ToolTip>
-        </ToolTipService.ToolTip>
+    <Grid>
+        <!--  Input: 圆点在左，名称在右  -->
+        <StackPanel
+            HorizontalAlignment="Left"
+            Orientation="Horizontal"
+            Spacing="4"
+            Visibility="{Binding Direction, Converter={StaticResource PortDirectionToVisibilityConverter}, ConverterParameter=Input}">
+            <Ellipse
+                x:Name="PortEllipse"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                PointerEntered="OnPortEllipsePointerEntered"
+                PointerExited="OnPortEllipsePointerExited"
+                PointerPressed="OnPortEllipsePointerPressed"
+                PointerReleased="OnPortEllipsePointerReleased"
+                Stroke="{ThemeResource ControlStrokeColorDefaultBrush}"
+                StrokeThickness="2" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="12"
+                Text="{Binding Name}" />
+            <ToolTipService.ToolTip>
+                <ToolTip>
+                    <TextBlock>
+                        <Run Text="{Binding Name}" />
+                        <Run Text=" (" />
+                        <Run Text="{Binding Type}" />
+                        <Run Text=")" />
+                    </TextBlock>
+                </ToolTip>
+            </ToolTipService.ToolTip>
+        </StackPanel>
+
+        <!--  Output: 名称在左，圆点在右，整体右对齐  -->
+        <StackPanel
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="4"
+            Visibility="{Binding Direction, Converter={StaticResource PortDirectionToVisibilityConverter}, ConverterParameter=Output}">
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="12"
+                Text="{Binding Name}" />
+            <Ellipse
+                x:Name="PortEllipseOutput"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                PointerEntered="OnPortEllipsePointerEntered"
+                PointerExited="OnPortEllipsePointerExited"
+                PointerPressed="OnPortEllipsePointerPressed"
+                PointerReleased="OnPortEllipsePointerReleased"
+                Stroke="{ThemeResource ControlStrokeColorDefaultBrush}"
+                StrokeThickness="2" />
+            <ToolTipService.ToolTip>
+                <ToolTip>
+                    <TextBlock>
+                        <Run Text="{Binding Name}" />
+                        <Run Text=" (" />
+                        <Run Text="{Binding Type}" />
+                        <Run Text=")" />
+                    </TextBlock>
+                </ToolTip>
+            </ToolTipService.ToolTip>
+        </StackPanel>
     </Grid>
+
 </UserControl>
