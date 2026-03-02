@@ -16,7 +16,6 @@ namespace Nodify.WinUI.Experimental.ViewModel;
 /// </summary>
 public sealed partial class NodeEditorViewModel : ObservableObject
 {
-    private bool _isUpdatingCanvasSize = false;
     private bool _isShiftingNodes = false;
 
     public NodeEditorViewModel()
@@ -56,10 +55,10 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     public partial double ViewportHeight { get; set; } = 600;
 
     [ObservableProperty]
-    public partial double CanvasWidth { get; set; } = 2000;
+    public partial double CanvasWidth { get; set; } = 200;
 
     [ObservableProperty]
-    public partial double CanvasHeight { get; set; } = 2000;
+    public partial double CanvasHeight { get; set; } = 200;
 
     public double ViewportScale
     {
@@ -447,35 +446,26 @@ public sealed partial class NodeEditorViewModel : ObservableObject
 
     private void UpdateCanvasSize()
     {
-        const double MinCanvasSize = 2000;
-        const double Padding = 500;
+        const double DefaultSize = 200;
+        const double Margin = 200;
 
         if (Nodes.Count == 0)
         {
-            CanvasWidth = MinCanvasSize;
-            CanvasHeight = MinCanvasSize;
+            CanvasWidth = DefaultSize;
+            CanvasHeight = DefaultSize;
             return;
         }
 
-        double minX = double.MaxValue;
-        double minY = double.MaxValue;
         double maxX = double.MinValue;
         double maxY = double.MinValue;
 
         foreach (NodeViewModel node in Nodes)
         {
-            minX = Math.Min(minX, node.X);
-            minY = Math.Min(minY, node.Y);
             maxX = Math.Max(maxX, node.X + node.Width);
             maxY = Math.Max(maxY, node.Y + node.Height);
         }
 
-        // Canvas starts at (0,0); negative coordinates are clipped and meaningless.
-        // Only size to fit the positive extent of all nodes.
-        double requiredWidth = Math.Max(maxX, 0) + Padding;
-        double requiredHeight = Math.Max(maxY, 0) + Padding;
-
-        CanvasWidth = Math.Max(MinCanvasSize, requiredWidth);
-        CanvasHeight = Math.Max(MinCanvasSize, requiredHeight);
+        CanvasWidth = maxX + Margin;
+        CanvasHeight = maxY + Margin;
     }
 }
