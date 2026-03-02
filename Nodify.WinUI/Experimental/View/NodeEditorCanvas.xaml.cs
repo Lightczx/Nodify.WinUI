@@ -47,6 +47,9 @@ public sealed partial class NodeEditorCanvas : UserControl
                 field.Connections.CollectionChanged += OnConnectionsCollectionChanged;
                 field.PropertyChanged += OnViewModelPropertyChanged;
 
+                // Set ViewModel for MiniMap
+                MiniMap.ViewModel = field;
+
                 // Initialize existing items
                 foreach (NodeViewModel node in field.Nodes)
                 {
@@ -57,6 +60,11 @@ public sealed partial class NodeEditorCanvas : UserControl
                 {
                     AddConnectionControl(connection);
                 }
+            }
+            else
+            {
+                // Clear MiniMap ViewModel when null
+                MiniMap.ViewModel = null;
             }
         }
     }
