@@ -17,13 +17,6 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid">
-        <!--  Background Grid Pattern  -->
-        <Canvas x:Name="BackgroundCanvas" Background="{ThemeResource LayerFillColorDefaultBrush}">
-            <Canvas.RenderTransform>
-                <CompositeTransform x:Name="BackgroundTransform" />
-            </Canvas.RenderTransform>
-        </Canvas>
-
         <!--  Main Canvas with Transform  -->
         <Canvas
             x:Name="MainCanvas"

@@ -115,11 +115,6 @@ public sealed partial class NodeEditorCanvas : UserControl
         CanvasTransform.TranslateY = ViewModel.ViewportOffsetY;
         CanvasTransform.ScaleX = ViewModel.ViewportScale;
         CanvasTransform.ScaleY = ViewModel.ViewportScale;
-
-        BackgroundTransform.TranslateX = ViewModel.ViewportOffsetX;
-        BackgroundTransform.TranslateY = ViewModel.ViewportOffsetY;
-        BackgroundTransform.ScaleX = ViewModel.ViewportScale;
-        BackgroundTransform.ScaleY = ViewModel.ViewportScale;
     }
 
     private void OnNodesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
