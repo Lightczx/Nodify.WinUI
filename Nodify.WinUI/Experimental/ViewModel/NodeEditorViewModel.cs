@@ -59,6 +59,9 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     [ObservableProperty]
     public partial NodeViewModel? SelectedNode { get; set; }
 
+    [ObservableProperty]
+    public partial string? CurrentFileName { get; set; } = "未命名";
+
     partial void OnSelectedNodeChanging(NodeViewModel? value)
     {
         // Deselect the old node

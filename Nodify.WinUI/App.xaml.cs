@@ -27,6 +27,8 @@ namespace Nodify.WinUI;
 public partial class App : Application
 {
     public Window? Window { get; private set; }
+    
+    public static MainWindow? MainWindow { get; private set; }
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -43,7 +45,8 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        Window = new MainWindow();
+        MainWindow = new MainWindow();
+        Window = MainWindow;
         Window.Activate();
     }
 }

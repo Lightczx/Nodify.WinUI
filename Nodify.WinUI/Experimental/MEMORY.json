@@ -130,6 +130,41 @@
         "添加了详细的调试日志追踪端口订阅状态",
         "修改文件：NodeEditorCanvas.xaml.cs 的 OnNodeControlPortsChanged 和 SubscribeToPortEvents 方法"
       ]
+    },
+    {
+      "name": "UI Redesign Task",
+      "entityType": "task",
+      "observations": [
+        "目标：遵循 Fluent Design 设计语言",
+        "三栏布局：顶部 CommandBar + 中部（左侧编辑区+小地图，右侧属性面板）+ 底部状态栏",
+        "顶部：使用 CommandBar，扩展到标题栏，显示文件名而非 'Node Editor'",
+        "移除重复的功能按钮",
+        "支持文件保存/加载，需显示当前文件信息",
+        "已完成 Fluent Design UI 改造",
+        "MainWindow: 添加了标题栏扩展支持 (ExtendsContentIntoTitleBar)",
+        "SamplePage: 重构为三栏布局 - 顶部 CommandBar + 中部（编辑区+小地图 | 属性面板）+ 底部状态栏",
+        "CommandBar: 包含添加节点、删除、保存、打开、重置缩放等命令，显示当前文件名",
+        "状态栏: 显示节点数、连接数、缩放比例",
+        "小地图: 以浮动卡片形式显示在编辑区右下角",
+        "NodeEditorViewModel: 添加 CurrentFileName 属性追踪当前文件",
+        "App.xaml.cs: 添加静态 MainWindow 引用供文件选择器使用",
+        "移除了重复的工具栏按钮，统一到 CommandBar"
+      ]
+    },
+    {
+      "name": "NodeEditor项目",
+      "entityType": "项目",
+      "observations": [
+        "WinUI 3 节点编辑器控件项目",
+        "已实现 Fluent Design 三栏布局",
+        "已移除 NodeEditorCanvas 中的顶部工具栏和底部状态栏",
+        "将 NodeEditorCanvas 的事件处理方法改为公共方法：AddNode(), ZoomIn(), ZoomOut(), ResetView(), SaveAsync(), LoadAsync()",
+        "SamplePage 的 CommandBar 现在调用 NodeEditorCanvas 的公共方法",
+        "移除了 SamplePage 中重复的 MiniMap，使用 NodeEditorCanvas 内置的 MiniMap",
+        "CommandBar 包含：添加节点、删除、保存、打开、放大、缩小、重置视图",
+        "底部状态栏显示节点数、连接数和缩放比例",
+        "顶部 CommandBar 显示当前文件名"
+      ]
     }
   ],
   "relations": [
@@ -137,6 +172,11 @@
       "from": "Connection Line Issue",
       "to": "Nodify.WinUI Project",
       "relationType": "belongs_to"
+    },
+    {
+      "from": "UI Redesign Task",
+      "to": "Nodify.WinUI Project",
+      "relationType": "applies_to"
     }
   ]
 }

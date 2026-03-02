@@ -1,5 +1,10 @@
 using Microsoft.UI.Xaml.Controls;
 using Nodify.WinUI.Experimental.ViewModel;
+using Nodify.WinUI.Experimental.Helpers;
+using Nodify.WinUI.Experimental.Model;
+using Windows.Storage;
+using System;
+using Microsoft.UI.Xaml;
 
 namespace Nodify.WinUI.Experimental;
 
@@ -17,7 +22,27 @@ public sealed partial class SamplePage : Page
         NodeEditor.ViewModel = viewModel;
     }
 
-    private void OnResetZoomClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void OnAddNodeClick(object sender, RoutedEventArgs e)
+    {
+        NodeEditor?.AddNode();
+    }
+
+    private void OnZoomInClick(object sender, RoutedEventArgs e)
+    {
+        NodeEditor?.ZoomIn();
+    }
+
+    private void OnZoomOutClick(object sender, RoutedEventArgs e)
+    {
+        NodeEditor?.ZoomOut();
+    }
+
+    private void OnResetViewClick(object sender, RoutedEventArgs e)
+    {
+        NodeEditor?.ResetView();
+    }
+
+    private void OnResetZoomClick(object sender, RoutedEventArgs e)
     {
         if (NodeEditor?.ViewModel != null)
         {
@@ -25,30 +50,21 @@ public sealed partial class SamplePage : Page
         }
     }
 
-    private void OnDeleteNodeClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void OnSaveClick(object sender, RoutedEventArgs e)
     {
-        if (NodeEditor?.ViewModel?.SelectedNode != null)
+        StorageFile? file = await NodeEditor?.SaveAsync();
+        if (file != null && NodeEditor?.ViewModel != null)
         {
-            NodeEditor.ViewModel.DeleteNode(NodeEditor.ViewModel.SelectedNode);
-            NodeEditor.ViewModel.SelectedNode = null;
+            NodeEditor.ViewModel.CurrentFileName = file.Name;
         }
     }
 
-    private void OnAddInputPortClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void OnLoadClick(object sender, RoutedEventArgs e)
     {
-        if (NodeEditor?.ViewModel?.SelectedNode != null)
+        StorageFile? file = await NodeEditor?.LoadAsync();
+        if (file != null && NodeEditor?.ViewModel != null)
         {
-            int count = NodeEditor.ViewModel.SelectedNode.InputPorts.Count + 1;
-            NodeEditor.ViewModel.SelectedNode.AddInputPort($"Input {count}");
-        }
-    }
-
-    private void OnAddOutputPortClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        if (NodeEditor?.ViewModel?.SelectedNode != null)
-        {
-            int count = NodeEditor.ViewModel.SelectedNode.OutputPorts.Count + 1;
-            NodeEditor.ViewModel.SelectedNode.AddOutputPort($"Output {count}");
+            NodeEditor.ViewModel.CurrentFileName = file.Name;
         }
     }
 }

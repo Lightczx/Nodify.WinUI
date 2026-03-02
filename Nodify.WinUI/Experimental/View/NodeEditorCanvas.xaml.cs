@@ -533,22 +533,29 @@ public sealed partial class NodeEditorCanvas : UserControl
         e.Handled = true;
     }
 
-    private void OnAddNodeButtonClick(object sender, RoutedEventArgs e)
+    // Public methods for external access
+    public void AddNode()
     {
         ViewModel?.AddNode(new(100, 100));
     }
 
-    private void OnZoomInButtonClick(object sender, RoutedEventArgs e)
+    public void ZoomIn()
     {
-        ViewModel?.ViewportScale *= 1.2;
+        if (ViewModel is not null)
+        {
+            ViewModel.ViewportScale *= 1.2;
+        }
     }
 
-    private void OnZoomOutButtonClick(object sender, RoutedEventArgs e)
+    public void ZoomOut()
     {
-        ViewModel?.ViewportScale /= 1.2;
+        if (ViewModel is not null)
+        {
+            ViewModel.ViewportScale /= 1.2;
+        }
     }
 
-    private void OnResetViewButtonClick(object sender, RoutedEventArgs e)
+    public void ResetView()
     {
         if (ViewModel is null)
         {
@@ -560,11 +567,11 @@ public sealed partial class NodeEditorCanvas : UserControl
         ViewModel.ViewportScale = 1.0;
     }
 
-    private async void OnSaveButtonClick(object sender, RoutedEventArgs e)
+    public async System.Threading.Tasks.Task<StorageFile?> SaveAsync()
     {
         if (ViewModel is null)
         {
-            return;
+            return null;
         }
 
         try
@@ -575,11 +582,12 @@ public sealed partial class NodeEditorCanvas : UserControl
 
             if (file == null)
             {
-                return;
+                return null;
             }
 
             EditorStateModel state = ViewModel.GetEditorState();
             await SerializationHelper.SaveToFileAsync(state, file);
+            return file;
         }
         catch (Exception ex)
         {
@@ -593,14 +601,15 @@ public sealed partial class NodeEditorCanvas : UserControl
             };
 
             await dialog.ShowAsync();
+            return null;
         }
     }
 
-    private async void OnLoadButtonClick(object sender, RoutedEventArgs e)
+    public async System.Threading.Tasks.Task<StorageFile?> LoadAsync()
     {
         if (ViewModel is null)
         {
-            return;
+            return null;
         }
 
         try
@@ -611,7 +620,7 @@ public sealed partial class NodeEditorCanvas : UserControl
 
             if (file == null)
             {
-                return;
+                return null;
             }
 
             EditorStateModel? state = await SerializationHelper.LoadFromFileAsync(file);
@@ -624,6 +633,8 @@ public sealed partial class NodeEditorCanvas : UserControl
                 UpdateAllPortPositions();
                 ViewModel.UpdateConnectionPositions();
             }
+
+            return file;
         }
         catch (Exception ex)
         {
@@ -636,6 +647,7 @@ public sealed partial class NodeEditorCanvas : UserControl
             };
 
             await dialog.ShowAsync();
+            return null;
         }
     }
 

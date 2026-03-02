@@ -5,46 +5,38 @@
     xmlns:converters="using:Nodify.WinUI.Experimental.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="200"
-    Height="150"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:PercentageConverter x:Key="PercentageConverter" />
     </UserControl.Resources>
 
-    <Grid>
-        <Border
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-            BorderThickness="2"
-            CornerRadius="4"
-            Opacity="0.9">
-            <Border.Shadow>
-                <ThemeShadow />
-            </Border.Shadow>
-        </Border>
+    <Border
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="4">
+        <Grid>
+            <Canvas x:Name="MiniMapCanvas">
+                <!--  Viewport Rectangle  -->
+                <Rectangle
+                    x:Name="ViewportRect"
+                    Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                    Opacity="0.3"
+                    PointerMoved="OnViewportRectPointerMoved"
+                    PointerPressed="OnViewportRectPointerPressed"
+                    PointerReleased="OnViewportRectPointerReleased"
+                    Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                    StrokeThickness="2" />
+            </Canvas>
 
-        <Canvas x:Name="MiniMapCanvas" Margin="4">
-            <!--  Viewport Rectangle  -->
-            <Rectangle
-                x:Name="ViewportRect"
-                Fill="{ThemeResource AccentFillColorDefaultBrush}"
-                Opacity="0.3"
-                PointerMoved="OnViewportRectPointerMoved"
-                PointerPressed="OnViewportRectPointerPressed"
-                PointerReleased="OnViewportRectPointerReleased"
-                Stroke="{ThemeResource AccentFillColorDefaultBrush}"
-                StrokeThickness="2" />
-        </Canvas>
-
-        <!--  Zoom info  -->
-        <TextBlock
-            Margin="8,4"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            FontSize="10"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Text="{Binding ViewportScale, Converter={StaticResource PercentageConverter}}" />
-    </Grid>
+            <!--  Zoom info  -->
+            <TextBlock
+                Margin="8,4"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                FontSize="10"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{Binding ViewportScale, Converter={StaticResource PercentageConverter}}" />
+        </Grid>
+    </Border>
 </UserControl>
