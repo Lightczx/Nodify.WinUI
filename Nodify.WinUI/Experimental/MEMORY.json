@@ -1,30 +1,62 @@
 {
   "entities": [
     {
-      "name": "NodeEditor连线问题修复",
-      "entityType": "问题修复",
+      "name": "WinUI3节点编辑器项目",
+      "entityType": "project",
       "observations": [
-        "问题：新建连线和加载保存的连线都无法显示，SourcePort.Position和TargetPort.Position都是(0,0)",
-        "根本原因：PortControl的位置更新时机不正确，TransformToVisual在布局完成前被调用",
-        "修复方案1：在PortControl中使用DispatcherQueue延迟更新位置，确保布局完成后再计算",
-        "修复方案2：在NodeControl的Loaded事件中更新端口位置",
-        "修复方案3：在AddConnectionControl中延迟50ms后强制更新所有端口位置",
-        "修复方案4：在OnPortConnectionCompleted中先更新端口位置再完成连线",
-        "修复方案5：在UpdatePortPosition中检查ActualWidth和ActualHeight，确保控件已布局",
-        "修复方案6：添加详细的调试日志输出，便于追踪问题"
+        "使用 WinUI 3 技术开发节点编辑器控件",
+        "主要文件：NodeEditorCanvas.xaml.cs, ConnectionControl.xaml.cs, PortControl.xaml.cs",
+        "支持节点拖拽、连线创建、保存和加载功能",
+        "文件写入最佳实践：大文件建议分块写入，每次控制在200行左右",
+        "推荐流程：先用 fsWrite 创建文件基础结构，再用 fsAppend 逐步追加内容",
+        "项目基础路径: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\",
+        "Experimental 目录: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\",
+        "View 目录: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\View\\",
+        "ViewModel 目录: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\",
+        "Model 目录: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\Model\\",
+        "Helpers 目录: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\Helpers\\",
+        "Converters 目录: C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\Converters\\",
+        "项目名称：Nodify.WinUI",
+        "项目基础路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\",
+        "所有代码位于 Experimental 目录下",
+        "View 文件路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\View\\",
+        "ViewModel 文件路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\",
+        "Model 文件路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\Model\\",
+        "Helpers 文件路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\Helpers\\",
+        "Converters 文件路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\Converters\\",
+        "NodeEditorCanvas.xaml.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\View\\NodeEditorCanvas.xaml.cs",
+        "ConnectionControl.xaml.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\View\\ConnectionControl.xaml.cs",
+        "PortControl.xaml.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\View\\PortControl.xaml.cs",
+        "NodeControl.xaml.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\View\\NodeControl.xaml.cs",
+        "ConnectionViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\ConnectionViewModel.cs",
+        "PortViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\PortViewModel.cs",
+        "NodeEditorViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\NodeEditorViewModel.cs",
+        "NodeViewModel.cs 完整路径：C:\\Users\\16861\\source\\repos\\Nodify.WinUI\\Nodify.WinUI\\Experimental\\ViewModel\\NodeViewModel.cs"
       ]
     },
     {
-      "name": "连线显示问题修复",
+      "name": "连线显示问题",
       "entityType": "bug_fix",
       "observations": [
-        "问题：新建连线和加载保存的连线都不显示",
-        "根本原因：AddConnectionControl 方法中只设置了 DataContext 而不是 ViewModel 属性",
-        "ConnectionControl 的 ViewModel setter 会订阅 PropertyChanged 事件并调用 UpdatePath() 绘制连线",
-        "只设置 DataContext 不会触发 ViewModel setter，导致 UpdatePath() 从未被调用",
-        "解决方案：将 DataContext = connection 改为 ViewModel = connection",
+        "问题1：新建连线和加载的连线都不显示",
+        "根本原因：ConnectionControl 只设置了 DataContext 而不是 ViewModel 属性",
+        "ConnectionControl.ViewModel setter 会订阅 PropertyChanged 并调用 UpdatePath() 绘制连线",
+        "解决方案：在 AddConnectionControl 中使用 ViewModel = connection 而不是 DataContext",
         "修改文件：NodeEditorCanvas.xaml.cs 第278行",
-        "添加调试日志到 ConnectionControl.UpdatePath() 方法"
+        "问题2：拖拽时临时连线不显示",
+        "解决方案：在 OnPortConnectionStarted 中设置 PendingConnectionControl.ViewModel 而不是 DataContext",
+        "修改文件：NodeEditorCanvas.xaml.cs 第330、353、413行"
+      ]
+    },
+    {
+      "name": "端口位置更新机制",
+      "entityType": "feature",
+      "observations": [
+        "PortControl 使用 DispatcherQueue 延迟更新位置，确保布局完成",
+        "在 UpdatePortPosition 中检查 ActualWidth 和 ActualHeight 避免过早计算",
+        "NodeControl 在 Loaded 事件中更新端口位置",
+        "端口位置相对于 NodesCanvas 计算，使用 TransformToVisual 获取绝对坐标",
+        "ConnectionViewModel 订阅端口 Position 变化自动更新连线路径"
       ]
     }
   ],
