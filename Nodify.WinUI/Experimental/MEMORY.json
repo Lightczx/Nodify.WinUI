@@ -79,6 +79,28 @@
         "解决方案2：在 ConnectionControl.UpdatePath() 中优化 SelectionPath 的显示逻辑，只在 IsSelected 为 true 时创建和显示",
         "修改文件：NodeEditorViewModel.cs 和 ConnectionControl.xaml.cs"
       ]
+    },
+    {
+      "name": "NodeEditor",
+      "entityType": "Project",
+      "observations": [
+        "WinUI 3 节点编辑器控件项目",
+        "修复了通过属性面板添加/删除端口时连线位置不更新的问题",
+        "使用 LayoutUpdated 事件确保在 UI 布局完成后才更新端口位置",
+        "ConnectionViewModel 已正确监听 PortViewModel.Position 的变化并自动更新连线",
+        "修复了从端口拖出连线时显示为粗线的问题，通过禁用 PendingConnectionControl 的指针事件"
+      ]
+    },
+    {
+      "name": "PortControl",
+      "entityType": "Component",
+      "observations": [
+        "添加了 LayoutUpdated 事件监听，当端口布局改变时自动更新位置",
+        "使用 _lastKnownPosition 字段跟踪上次已知位置，避免重复更新",
+        "使用 _isUpdatingPosition 标志防止递归调用和重复更新",
+        "当端口集合变化导致布局改变时，PortControl 会自动检测并更新端口位置",
+        "位置更新后会触发 ViewModel.Position 的 PropertyChanged，从而更新连线"
+      ]
     }
   ],
   "relations": [

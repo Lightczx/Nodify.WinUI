@@ -10,10 +10,14 @@ namespace Nodify.WinUI.Experimental.View;
 
 public sealed partial class PortControl : UserControl
 {
+    private Point _lastKnownPosition = new Point(double.NaN, double.NaN);
+    private bool _isUpdatingPosition = false;
+
     public PortControl()
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        LayoutUpdated += OnLayoutUpdated;
     }
 
     public event EventHandler<PortViewModel?>? ConnectionStarted;
@@ -58,6 +62,18 @@ public sealed partial class PortControl : UserControl
         });
     }
 
+    private void OnLayoutUpdated(object? sender, object e)
+    {
+        // When layout changes (e.g., ports added/removed), update position
+        if (!_isUpdatingPosition && ViewModel != null)
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                UpdatePortPosition();
+            });
+        }
+    }
+
     private void UpdatePortPosition()
     {
         if (ViewModel is null)
@@ -65,6 +81,13 @@ public sealed partial class PortControl : UserControl
             System.Diagnostics.Debug.WriteLine($"[PortControl] ViewModel is null");
             return;
         }
+
+        if (_isUpdatingPosition)
+        {
+            return;
+        }
+
+        _isUpdatingPosition = true;
 
         try
         {
@@ -85,9 +108,13 @@ public sealed partial class PortControl : UserControl
             // Get the center position of the port in canvas coordinates
             Point position = TransformToVisual(canvas).TransformPoint(new(8, 8)); // Center of the ellipse
             
-            // Only update if position actually changed
-            if (Math.Abs(ViewModel.Position.X - position.X) > 0.1 || Math.Abs(ViewModel.Position.Y - position.Y) > 0.1)
+            // Check if position actually changed from last known position
+            if (double.IsNaN(_lastKnownPosition.X) || 
+                Math.Abs(_lastKnownPosition.X - position.X) > 0.1 || 
+                Math.Abs(_lastKnownPosition.Y - position.Y) > 0.1)
             {
+                _lastKnownPosition = position;
+                // Always update ViewModel.Position to trigger PropertyChanged
                 ViewModel.Position = position;
                 System.Diagnostics.Debug.WriteLine($"[PortControl] Updated position for {ViewModel.Name}: ({position.X:F2}, {position.Y:F2})");
             }
@@ -95,6 +122,10 @@ public sealed partial class PortControl : UserControl
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[PortControl] Failed to update position: {ex.Message}");
+        }
+        finally
+        {
+            _isUpdatingPosition = false;
         }
     }
 
