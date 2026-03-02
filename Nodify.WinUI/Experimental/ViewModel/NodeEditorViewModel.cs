@@ -16,8 +16,8 @@ public sealed partial class NodeEditorViewModel : ObservableObject
 {
     public NodeEditorViewModel()
     {
-        Nodes = new ObservableCollection<NodeViewModel>();
-        Connections = new ObservableCollection<ConnectionViewModel>();
+        Nodes = [];
+        Connections = [];
 
         AddNodeCommand = new RelayCommand<Point>(AddNode);
         DeleteNodeCommand = new RelayCommand<NodeViewModel>(DeleteNode);
@@ -29,6 +29,7 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     }
 
     public ObservableCollection<NodeViewModel> Nodes { get; }
+
     public ObservableCollection<ConnectionViewModel> Connections { get; }
 
     [ObservableProperty]
@@ -80,11 +81,17 @@ public sealed partial class NodeEditorViewModel : ObservableObject
     }
 
     public ICommand AddNodeCommand { get; }
+
     public ICommand DeleteNodeCommand { get; }
+
     public ICommand DeleteSelectedNodeCommand { get; }
+
     public ICommand DeleteConnectionCommand { get; }
+
     public ICommand ZoomInCommand { get; }
+
     public ICommand ZoomOutCommand { get; }
+
     public ICommand ResetViewCommand { get; }
 
     public void AddNode(Point position)
@@ -263,7 +270,7 @@ public sealed partial class NodeEditorViewModel : ObservableObject
         Connections.Clear();
 
         // Load nodes
-        List<NodeViewModel> nodeViewModels = state.Nodes.Select(n => new NodeViewModel(n)).ToList();
+        List<NodeViewModel> nodeViewModels = [.. state.Nodes.Select(n => new NodeViewModel(n))];
         foreach (NodeViewModel node in nodeViewModels)
         {
             Nodes.Add(node);

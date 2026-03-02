@@ -1,7 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
-using Nodify.WinUI.Experimental.Model;
 using Nodify.WinUI.Experimental.ViewModel;
-using Windows.Foundation;
 
 namespace Nodify.WinUI.Experimental;
 

@@ -13,6 +13,7 @@ using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
 using Nodify.WinUI.Experimental.Model;
+using WinRT;
 
 namespace Nodify.WinUI.Experimental.View;
 
@@ -63,7 +64,7 @@ public sealed partial class NodeEditorCanvas : UserControl
         InitializeComponent();
     }
 
-    private static IEnumerable<PortControl> FindPortControls(DependencyObject parent)
+    private static List<PortControl> FindPortControls(DependencyObject parent)
     {
         List<PortControl> ports = [];
         int childCount = VisualTreeHelper.GetChildrenCount(parent);
@@ -222,7 +223,7 @@ public sealed partial class NodeEditorCanvas : UserControl
 
         if (e.PropertyName is nameof(NodeViewModel.IsSelected) && node.IsSelected && ViewModel?.SelectedNode != node)
         {
-            ViewModel.SelectedNode = node;
+            ViewModel?.SelectedNode = node;
         }
     }
 
@@ -292,7 +293,7 @@ public sealed partial class NodeEditorCanvas : UserControl
         }
     }
 
-    private void OnPortConnectionStarted(object? sender, PortViewModel port)
+    private void OnPortConnectionStarted(object? sender, PortViewModel? port)
     {
         connectionStartPort = port;
         ViewModel?.StartConnection(port);
@@ -333,7 +334,7 @@ public sealed partial class NodeEditorCanvas : UserControl
         else if (pointer.Properties.IsLeftButtonPressed)
         {
             // Check if clicked on canvas background (not on a node or connection)
-            if (e.OriginalSource == MainCanvas || e.OriginalSource == sender)
+            if (e.OriginalSource.As<Canvas>() == MainCanvas || e.OriginalSource == sender)
             {
                 // Deselect current node when clicking on empty canvas
                 if (ViewModel?.SelectedNode != null)

@@ -72,8 +72,6 @@ public sealed partial class ConnectionViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
-
-
     public void UpdatePoints()
     {
         if (SourcePort is not null)

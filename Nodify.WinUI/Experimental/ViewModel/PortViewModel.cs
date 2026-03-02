@@ -14,7 +14,8 @@ public sealed partial class PortViewModel : ObservableObject
 
     public PortViewModel(PortModel model)
     {
-        this.model = model ?? throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
+        this.model = model;
     }
 
     public Guid Id { get => model.Id; }
