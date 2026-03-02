@@ -88,7 +88,11 @@
         "修复了通过属性面板添加/删除端口时连线位置不更新的问题",
         "使用 LayoutUpdated 事件确保在 UI 布局完成后才更新端口位置",
         "ConnectionViewModel 已正确监听 PortViewModel.Position 的变化并自动更新连线",
-        "修复了从端口拖出连线时显示为粗线的问题，通过禁用 PendingConnectionControl 的指针事件"
+        "修复了从端口拖出连线时显示为粗线的问题，通过禁用 PendingConnectionControl 的指针事件",
+        "修复了通过属性面板添加/删除端口时无法建立连接的问题",
+        "PortControl 在 Loaded 事件中自动向 NodeEditorCanvas 注册事件",
+        "NodeEditorCanvas 提供 RegisterPortControl 公共方法供 PortControl 注册",
+        "不再依赖延迟时间和手动查找，每个 PortControl 在加载完成后自动注册"
       ]
     },
     {
@@ -100,6 +104,31 @@
         "使用 _isUpdatingPosition 标志防止递归调用和重复更新",
         "当端口集合变化导致布局改变时，PortControl 会自动检测并更新端口位置",
         "位置更新后会触发 ViewModel.Position 的 PropertyChanged，从而更新连线"
+      ]
+    },
+    {
+      "name": "WinUI3节点编辑器",
+      "entityType": "项目",
+      "observations": [
+        "使用 WinUI 3 技术制作节点编辑器控件",
+        "包含 NodeControl、PortControl、ConnectionControl 等控件",
+        "支持通过属性面板动态添加/删除端口",
+        "支持拖拽创建连接"
+      ]
+    },
+    {
+      "name": "端口动态添加问题",
+      "entityType": "问题",
+      "observations": [
+        "通过属性面板新增端口时，连线位置不会立即更新",
+        "通过属性面板新增的端口无法建立连接，也无法从这些端口拖出连线",
+        "问题根源：新的 PortControl 生成时，事件没有被订阅",
+        "ItemsControl 生成容器是异步的，需要延迟订阅事件",
+        "解决方案：在 NodeEditorCanvas.OnNodeControlPortsChanged 中使用双重 DispatcherQueue 延迟调用",
+        "第一次延迟确保进入下一帧，第二次延迟确保 ItemsControl 已生成所有容器",
+        "在 SubscribeToPortEvents 中先取消订阅再重新订阅，避免重复订阅",
+        "添加了详细的调试日志追踪端口订阅状态",
+        "修改文件：NodeEditorCanvas.xaml.cs 的 OnNodeControlPortsChanged 和 SubscribeToPortEvents 方法"
       ]
     }
   ],

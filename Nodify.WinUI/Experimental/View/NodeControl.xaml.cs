@@ -22,6 +22,7 @@ public sealed partial class NodeControl : UserControl
     }
 
     public event EventHandler<NodeViewModel>? NodeMoved;
+    public event EventHandler? PortsChanged;
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -65,6 +66,9 @@ public sealed partial class NodeControl : UserControl
         System.Diagnostics.Debug.WriteLine($"[NodeControl] Ports collection changed, scheduling layout update");
         _needsPortPositionUpdate = true;
         LayoutUpdated += OnLayoutUpdatedForPortPositions;
+        
+        // Notify that ports have changed so event subscriptions can be updated
+        PortsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnLayoutUpdatedForPortPositions(object? sender, object e)
@@ -78,14 +82,7 @@ public sealed partial class NodeControl : UserControl
         LayoutUpdated -= OnLayoutUpdatedForPortPositions;
         _needsPortPositionUpdate = false;
 
-        System.Diagnostics.Debug.WriteLine($"[NodeControl] Layout updated, scheduling delayed port position update");
-        
-        // Delay one more frame to ensure all containers are generated and laid out
-        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-        {
-            System.Diagnostics.Debug.WriteLine($"[NodeControl] Executing delayed port position update");
-            UpdatePortPositions();
-        });
+        UpdatePortPositions();
     }
 
     public void UpdatePortPositions()

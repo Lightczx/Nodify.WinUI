@@ -10,7 +10,7 @@ namespace Nodify.WinUI.Experimental.View;
 
 public sealed partial class PortControl : UserControl
 {
-    private Point _lastKnownPosition = new Point(double.NaN, double.NaN);
+    private Point _lastKnownPosition = new(double.NaN, double.NaN);
     private bool _isUpdatingPosition = false;
 
     public PortControl()
@@ -39,11 +39,7 @@ public sealed partial class PortControl : UserControl
 
             if (@field is not null)
             {
-                // Schedule position update after layout
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    UpdatePortPosition();
-                });
+                UpdatePortPosition();
             }
         }
     }
@@ -56,10 +52,19 @@ public sealed partial class PortControl : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         // Update position when loaded
-        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+        UpdatePortPosition();
+
+        // Register with NodeEditorCanvas
+        NodeEditorCanvas? canvas = FindNodeEditorCanvas();
+        if (canvas != null)
         {
-            UpdatePortPosition();
-        });
+            canvas.RegisterPortControl(this);
+            System.Diagnostics.Debug.WriteLine($"[PortControl] Registered port {ViewModel?.Name} with NodeEditorCanvas");
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[PortControl] Failed to find NodeEditorCanvas for port {ViewModel?.Name}");
+        }
     }
 
     private void OnLayoutUpdated(object? sender, object e)
@@ -67,10 +72,7 @@ public sealed partial class PortControl : UserControl
         // When layout changes (e.g., ports added/removed), update position
         if (!_isUpdatingPosition && ViewModel != null)
         {
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                UpdatePortPosition();
-            });
+            UpdatePortPosition();
         }
     }
 
@@ -136,6 +138,21 @@ public sealed partial class PortControl : UserControl
         {
             parent = VisualTreeHelper.GetParent(parent);
             if (parent is Canvas canvas && canvas.Name == "NodesCanvas")
+            {
+                return canvas;
+            }
+        }
+
+        return null;
+    }
+
+    private NodeEditorCanvas? FindNodeEditorCanvas()
+    {
+        DependencyObject? parent = this;
+        while (parent != null)
+        {
+            parent = VisualTreeHelper.GetParent(parent);
+            if (parent is NodeEditorCanvas canvas)
             {
                 return canvas;
             }

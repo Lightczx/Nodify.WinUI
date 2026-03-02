@@ -188,6 +188,7 @@ public sealed partial class NodeEditorCanvas : UserControl
     {
         NodeControl nodeControl = new() { DataContext = node };
         nodeControl.NodeMoved += OnNodeControlNodeMoved;
+        nodeControl.PortsChanged += OnNodeControlPortsChanged;
 
         // Subscribe to selection changes
         node.PropertyChanged += OnNodeViewModelPropertyChanged;
@@ -216,6 +217,17 @@ public sealed partial class NodeEditorCanvas : UserControl
 
         SubscribeToPortEvents(nodeControl);
         UpdateNodePortPositions(nodeControl);
+    }
+
+    private void OnNodeControlPortsChanged(object? sender, EventArgs e)
+    {
+        if (sender is not NodeControl nodeControl)
+        {
+            return;
+        }
+
+        System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Ports changed, resubscribing to port events");
+        SubscribeToPortEvents(nodeControl);
     }
 
     private void OnNodeViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -252,11 +264,34 @@ public sealed partial class NodeEditorCanvas : UserControl
 
     private void SubscribeToPortEvents(NodeControl nodeControl)
     {
-        foreach (PortControl port in FindPortControls(nodeControl))
+        List<PortControl> ports = FindPortControls(nodeControl);
+        System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Found {ports.Count} port controls to subscribe");
+        
+        foreach (PortControl port in ports)
         {
+            // Unsubscribe first to avoid duplicate subscriptions
+            port.ConnectionStarted -= OnPortConnectionStarted;
+            port.ConnectionCompleted -= OnPortConnectionCompleted;
+            
+            // Subscribe to events
             port.ConnectionStarted += OnPortConnectionStarted;
             port.ConnectionCompleted += OnPortConnectionCompleted;
+            
+            System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Subscribed to port: {port.ViewModel?.Name}");
         }
+    }
+
+    public void RegisterPortControl(PortControl portControl)
+    {
+        // Unsubscribe first to avoid duplicate subscriptions
+        portControl.ConnectionStarted -= OnPortConnectionStarted;
+        portControl.ConnectionCompleted -= OnPortConnectionCompleted;
+        
+        // Subscribe to events
+        portControl.ConnectionStarted += OnPortConnectionStarted;
+        portControl.ConnectionCompleted += OnPortConnectionCompleted;
+        
+        System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Registered port control: {portControl.ViewModel?.Name}");
     }
 
     private void UpdateNodePortPositions(NodeControl nodeControl)
