@@ -95,13 +95,11 @@ public sealed partial class ConnectionViewModel : ObservableObject
         if (SourcePort is not null)
         {
             SourcePoint = SourcePort.Position;
-            System.Diagnostics.Debug.WriteLine($"[ConnectionViewModel] UpdatePoints - Source: {SourcePort.Name} at ({SourcePort.Position.X:F2}, {SourcePort.Position.Y:F2})");
         }
 
         if (TargetPort is not null)
         {
             TargetPoint = TargetPort.Position;
-            System.Diagnostics.Debug.WriteLine($"[ConnectionViewModel] UpdatePoints - Target: {TargetPort.Name} at ({TargetPort.Position.X:F2}, {TargetPort.Position.Y:F2})");
         }
     }
 

@@ -10,9 +10,4 @@ public sealed partial class EmptyObjectToVisibilityInverseConverter : EmptyObjec
         EmptyValue = Visibility.Visible;
         NotEmptyValue = Visibility.Collapsed;
     }
-
-    protected override bool CheckValueIsEmpty(object value)
-    {
-        return base.CheckValueIsEmpty(value);
-    }
 }

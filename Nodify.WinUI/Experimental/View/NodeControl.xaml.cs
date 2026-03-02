@@ -13,7 +13,7 @@ public sealed partial class NodeControl : UserControl
 {
     private bool isDragging;
     private Point dragStartPoint;
-    private bool _needsPortPositionUpdate;
+    private bool needsPortPositionUpdate;
 
     public NodeControl()
     {
@@ -52,7 +52,7 @@ public sealed partial class NodeControl : UserControl
                 @field.PropertyChanged += OnViewModelPropertyChanged;
                 Canvas.SetLeft(this, @field.X);
                 Canvas.SetTop(this, @field.Y);
-                
+
                 // Subscribe to port collection changes
                 @field.InputPorts.CollectionChanged += OnPortsCollectionChanged;
                 @field.OutputPorts.CollectionChanged += OnPortsCollectionChanged;
@@ -63,35 +63,29 @@ public sealed partial class NodeControl : UserControl
     private void OnPortsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         // When ports are added or removed, schedule position update after layout completes
-        System.Diagnostics.Debug.WriteLine($"[NodeControl] Ports collection changed, scheduling layout update");
-        _needsPortPositionUpdate = true;
+        needsPortPositionUpdate = true;
         LayoutUpdated += OnLayoutUpdatedForPortPositions;
-        
+
         // Notify that ports have changed so event subscriptions can be updated
         PortsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnLayoutUpdatedForPortPositions(object? sender, object e)
     {
-        if (!_needsPortPositionUpdate)
+        if (!needsPortPositionUpdate)
         {
             return;
         }
 
         // Unsubscribe immediately to avoid multiple calls
         LayoutUpdated -= OnLayoutUpdatedForPortPositions;
-        _needsPortPositionUpdate = false;
+        needsPortPositionUpdate = false;
 
         UpdatePortPositions();
     }
 
     public void UpdatePortPositions()
     {
-        int inputUpdated = 0;
-        int inputSkipped = 0;
-        int outputUpdated = 0;
-        int outputSkipped = 0;
-
         // Update input ports
         if (InputPortsControl.Items != null)
         {
@@ -100,8 +94,6 @@ public sealed partial class NodeControl : UserControl
                 FrameworkElement? container = InputPortsControl.ContainerFromIndex(i) as FrameworkElement;
                 if (container == null)
                 {
-                    inputSkipped++;
-                    System.Diagnostics.Debug.WriteLine($"[NodeControl] Input port {i}: container is null");
                     continue;
                 }
 
@@ -109,12 +101,6 @@ public sealed partial class NodeControl : UserControl
                 if (portControl != null)
                 {
                     portControl.UpdatePosition();
-                    inputUpdated++;
-                }
-                else
-                {
-                    inputSkipped++;
-                    System.Diagnostics.Debug.WriteLine($"[NodeControl] Input port {i}: PortControl not found");
                 }
             }
         }
@@ -127,8 +113,6 @@ public sealed partial class NodeControl : UserControl
                 FrameworkElement? container = OutputPortsControl.ContainerFromIndex(i) as FrameworkElement;
                 if (container == null)
                 {
-                    outputSkipped++;
-                    System.Diagnostics.Debug.WriteLine($"[NodeControl] Output port {i}: container is null");
                     continue;
                 }
 
@@ -136,17 +120,9 @@ public sealed partial class NodeControl : UserControl
                 if (portControl != null)
                 {
                     portControl.UpdatePosition();
-                    outputUpdated++;
-                }
-                else
-                {
-                    outputSkipped++;
-                    System.Diagnostics.Debug.WriteLine($"[NodeControl] Output port {i}: PortControl not found");
                 }
             }
         }
-
-        System.Diagnostics.Debug.WriteLine($"[NodeControl] Port position update complete: Input({inputUpdated} updated, {inputSkipped} skipped), Output({outputUpdated} updated, {outputSkipped} skipped)");
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

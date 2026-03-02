@@ -12,6 +12,8 @@ using System.ComponentModel;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.System;
+using Windows.UI.Core;
 using Nodify.WinUI.Experimental.Model;
 using WinRT;
 
@@ -226,7 +228,6 @@ public sealed partial class NodeEditorCanvas : UserControl
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Ports changed, resubscribing to port events");
         SubscribeToPortEvents(nodeControl);
     }
 
@@ -265,19 +266,16 @@ public sealed partial class NodeEditorCanvas : UserControl
     private void SubscribeToPortEvents(NodeControl nodeControl)
     {
         List<PortControl> ports = FindPortControls(nodeControl);
-        System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Found {ports.Count} port controls to subscribe");
-        
+
         foreach (PortControl port in ports)
         {
             // Unsubscribe first to avoid duplicate subscriptions
             port.ConnectionStarted -= OnPortConnectionStarted;
             port.ConnectionCompleted -= OnPortConnectionCompleted;
-            
+
             // Subscribe to events
             port.ConnectionStarted += OnPortConnectionStarted;
             port.ConnectionCompleted += OnPortConnectionCompleted;
-            
-            System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Subscribed to port: {port.ViewModel?.Name}");
         }
     }
 
@@ -286,12 +284,10 @@ public sealed partial class NodeEditorCanvas : UserControl
         // Unsubscribe first to avoid duplicate subscriptions
         portControl.ConnectionStarted -= OnPortConnectionStarted;
         portControl.ConnectionCompleted -= OnPortConnectionCompleted;
-        
+
         // Subscribe to events
         portControl.ConnectionStarted += OnPortConnectionStarted;
         portControl.ConnectionCompleted += OnPortConnectionCompleted;
-        
-        System.Diagnostics.Debug.WriteLine($"[NodeEditorCanvas] Registered port control: {portControl.ViewModel?.Name}");
     }
 
     private void UpdateNodePortPositions(NodeControl nodeControl)
@@ -313,19 +309,15 @@ public sealed partial class NodeEditorCanvas : UserControl
         ConnectionControl connectionControl = new() { ViewModel = connection };
         connectionControl.ConnectionRemoved += OnConnectionControlConnectionRemoved;
         ConnectionsCanvas.Children.Add(connectionControl);
-        
+
         // Wait for layout to complete before updating connection points
         await System.Threading.Tasks.Task.Delay(50);
-        
+
         // Force update port positions
         UpdateAllPortPositions();
-        
+
         // Now update the connection points
         connection.UpdatePoints();
-        
-        System.Diagnostics.Debug.WriteLine($"[AddConnectionControl] Added connection from {connection.SourcePort?.Name} to {connection.TargetPort?.Name}");
-        System.Diagnostics.Debug.WriteLine($"[AddConnectionControl] Source position: {connection.SourcePort?.Position}");
-        System.Diagnostics.Debug.WriteLine($"[AddConnectionControl] Target position: {connection.TargetPort?.Position}");
     }
 
     private void OnConnectionControlConnectionRemoved(object? sender, ConnectionViewModel? connection)
@@ -370,16 +362,12 @@ public sealed partial class NodeEditorCanvas : UserControl
     {
         if (connectionStartPort is not null && port is not null)
         {
-            System.Diagnostics.Debug.WriteLine($"[OnPortConnectionCompleted] Completing connection from {connectionStartPort.Name} to {port.Name}");
-            System.Diagnostics.Debug.WriteLine($"[OnPortConnectionCompleted] Start port position: {connectionStartPort.Position}");
-            System.Diagnostics.Debug.WriteLine($"[OnPortConnectionCompleted] End port position: {port.Position}");
-            
             // Force update port positions before completing connection
             UpdateAllPortPositions();
-            
+
             // Small delay to ensure positions are updated
             await System.Threading.Tasks.Task.Delay(10);
-            
+
             ViewModel?.CompleteConnection(port);
         }
 
@@ -458,8 +446,8 @@ public sealed partial class NodeEditorCanvas : UserControl
         }
 
         int delta = pointer.Properties.MouseWheelDelta;
-        bool isCtrlPressed = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
-        bool isShiftPressed = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Shift).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        bool isCtrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        bool isShiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
 
         if (isCtrlPressed)
         {
@@ -474,8 +462,8 @@ public sealed partial class NodeEditorCanvas : UserControl
             newScale = Math.Max(0.1, Math.Min(5.0, newScale));
 
             // Snap to 100% when close (within 5% range)
-            const double snapThreshold = 0.05; // 5% threshold
-            if (Math.Abs(newScale - 1.0) < snapThreshold && Math.Abs(ViewModel.ViewportScale - 1.0) >= snapThreshold)
+            const double SnapThreshold = 0.05; // 5% threshold
+            if (Math.Abs(newScale - 1.0) < SnapThreshold && Math.Abs(ViewModel.ViewportScale - 1.0) >= SnapThreshold)
             {
                 newScale = 1.0;
             }
@@ -622,7 +610,7 @@ public sealed partial class NodeEditorCanvas : UserControl
             if (state is not null)
             {
                 ViewModel.LoadEditorState(state);
-                
+
                 // Wait for UI to render and update port positions
                 await System.Threading.Tasks.Task.Delay(100);
                 UpdateAllPortPositions();

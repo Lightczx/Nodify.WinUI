@@ -55,7 +55,7 @@ public static class SerializationHelper
         }
     }
 
-    public static async Task<StorageFile?> PickSaveFileAsync(IntPtr windowHandle)
+    public static async Task<StorageFile?> PickSaveFileAsync(nint windowHandle)
     {
         FileSavePicker savePicker = new();
 
@@ -69,7 +69,7 @@ public static class SerializationHelper
         return await savePicker.PickSaveFileAsync();
     }
 
-    public static async Task<StorageFile?> PickLoadFileAsync(IntPtr windowHandle)
+    public static async Task<StorageFile?> PickLoadFileAsync(nint windowHandle)
     {
         FileOpenPicker openPicker = new();
 

@@ -10,8 +10,8 @@ namespace Nodify.WinUI.Experimental.View;
 
 public sealed partial class PortControl : UserControl
 {
-    private Point _lastKnownPosition = new(double.NaN, double.NaN);
-    private bool _isUpdatingPosition = false;
+    private Point lastKnownPosition = new(double.NaN, double.NaN);
+    private bool isUpdatingPosition;
 
     public PortControl()
     {
@@ -21,6 +21,7 @@ public sealed partial class PortControl : UserControl
     }
 
     public event EventHandler<PortViewModel?>? ConnectionStarted;
+
     public event EventHandler<PortViewModel?>? ConnectionCompleted;
 
     public PortViewModel? ViewModel
@@ -59,18 +60,13 @@ public sealed partial class PortControl : UserControl
         if (canvas != null)
         {
             canvas.RegisterPortControl(this);
-            System.Diagnostics.Debug.WriteLine($"[PortControl] Registered port {ViewModel?.Name} with NodeEditorCanvas");
-        }
-        else
-        {
-            System.Diagnostics.Debug.WriteLine($"[PortControl] Failed to find NodeEditorCanvas for port {ViewModel?.Name}");
         }
     }
 
     private void OnLayoutUpdated(object? sender, object e)
     {
         // When layout changes (e.g., ports added/removed), update position
-        if (!_isUpdatingPosition && ViewModel != null)
+        if (!isUpdatingPosition && ViewModel != null)
         {
             UpdatePortPosition();
         }
@@ -80,54 +76,50 @@ public sealed partial class PortControl : UserControl
     {
         if (ViewModel is null)
         {
-            System.Diagnostics.Debug.WriteLine($"[PortControl] ViewModel is null");
             return;
         }
 
-        if (_isUpdatingPosition)
+        if (isUpdatingPosition)
         {
             return;
         }
 
-        _isUpdatingPosition = true;
+        isUpdatingPosition = true;
 
         try
         {
             // Check if the control is loaded and has valid size
-            if (ActualWidth == 0 || ActualHeight == 0)
+            if (ActualWidth is 0 || ActualHeight is 0)
             {
-                System.Diagnostics.Debug.WriteLine($"[PortControl] Control not yet laid out for port {ViewModel.Name}");
                 return;
             }
 
             UIElement? canvas = GetCanvasParent();
             if (canvas is null)
             {
-                System.Diagnostics.Debug.WriteLine($"[PortControl] Canvas not found for port {ViewModel.Name}");
                 return;
             }
 
             // Get the center position of the port in canvas coordinates
             Point position = TransformToVisual(canvas).TransformPoint(new(8, 8)); // Center of the ellipse
-            
+
             // Check if position actually changed from last known position
-            if (double.IsNaN(_lastKnownPosition.X) || 
-                Math.Abs(_lastKnownPosition.X - position.X) > 0.1 || 
-                Math.Abs(_lastKnownPosition.Y - position.Y) > 0.1)
+            if (double.IsNaN(lastKnownPosition.X) ||
+                Math.Abs(lastKnownPosition.X - position.X) > 0.1 ||
+                Math.Abs(lastKnownPosition.Y - position.Y) > 0.1)
             {
-                _lastKnownPosition = position;
+                lastKnownPosition = position;
                 // Always update ViewModel.Position to trigger PropertyChanged
                 ViewModel.Position = position;
-                System.Diagnostics.Debug.WriteLine($"[PortControl] Updated position for {ViewModel.Name}: ({position.X:F2}, {position.Y:F2})");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[PortControl] Failed to update position: {ex.Message}");
+            // Silently handle exceptions
         }
         finally
         {
-            _isUpdatingPosition = false;
+            isUpdatingPosition = false;
         }
     }
 

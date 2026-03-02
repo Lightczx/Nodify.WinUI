@@ -99,7 +99,6 @@ public sealed partial class ConnectionControl : UserControl
         if (!IsValidPoint(ViewModel.SourcePoint) || !IsValidPoint(ViewModel.TargetPoint))
         {
             // Don't update path with invalid points
-            System.Diagnostics.Debug.WriteLine($"[ConnectionControl] UpdatePath skipped - Invalid points: Source({ViewModel.SourcePoint.X}, {ViewModel.SourcePoint.Y}), Target({ViewModel.TargetPoint.X}, {ViewModel.TargetPoint.Y})");
             return;
         }
 
@@ -116,8 +115,6 @@ public sealed partial class ConnectionControl : UserControl
             SelectionPath.Data = CreateBezierGeometry(ViewModel.SourcePoint, ViewModel.TargetPoint);
             SelectionPath.Visibility = Visibility.Visible;
         }
-        
-        System.Diagnostics.Debug.WriteLine($"[ConnectionControl] UpdatePath - Path updated from ({ViewModel.SourcePoint.X:F2}, {ViewModel.SourcePoint.Y:F2}) to ({ViewModel.TargetPoint.X:F2}, {ViewModel.TargetPoint.Y:F2}), IsSelected: {ViewModel.IsSelected}");
     }
 
     private void OnConnectionPathPointerEntered(object sender, PointerRoutedEventArgs e)
