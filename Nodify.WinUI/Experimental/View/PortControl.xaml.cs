@@ -21,18 +21,19 @@ public sealed partial class PortControl : UserControl
 
     public PortViewModel? ViewModel
     {
-        get;
+        get => DataContext as PortViewModel;
         set
         {
-            if (field is not null)
+            PortViewModel? @field = ViewModel;
+            if (@field is not null)
             {
                 // No events to unsubscribe for PortViewModel currently
             }
 
-            field = value;
+            @field = value;
             DataContext = value;
 
-            if (field is not null)
+            if (@field is not null)
             {
                 UpdatePortPosition();
             }

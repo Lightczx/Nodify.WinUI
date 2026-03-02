@@ -22,22 +22,23 @@ public sealed partial class NodeControl : UserControl
 
     public NodeViewModel? ViewModel
     {
-        get;
+        get => DataContext as NodeViewModel;
         set
         {
-            if (field is not null)
+            NodeViewModel? @field = ViewModel;
+            if (@field is not null)
             {
-                field.PropertyChanged -= OnViewModelPropertyChanged;
+                @field.PropertyChanged -= OnViewModelPropertyChanged;
             }
 
-            field = value;
+            @field = value;
             DataContext = value;
 
-            if (field is not null)
+            if (@field is not null)
             {
-                field.PropertyChanged += OnViewModelPropertyChanged;
-                Canvas.SetLeft(this, field.X);
-                Canvas.SetTop(this, field.Y);
+                @field.PropertyChanged += OnViewModelPropertyChanged;
+                Canvas.SetLeft(this, @field.X);
+                Canvas.SetTop(this, @field.Y);
             }
         }
     }

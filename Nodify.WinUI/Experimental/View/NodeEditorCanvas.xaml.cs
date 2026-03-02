@@ -195,6 +195,10 @@ public sealed partial class NodeEditorCanvas : UserControl
         // Subscribe to port events
         nodeControl.Loaded += OnNodeControlLoaded;
 
+        // Set initial position immediately
+        Canvas.SetLeft(nodeControl, node.X);
+        Canvas.SetTop(nodeControl, node.Y);
+
         NodesCanvas.Children.Add(nodeControl);
     }
 
@@ -334,13 +338,10 @@ public sealed partial class NodeEditorCanvas : UserControl
         else if (pointer.Properties.IsLeftButtonPressed)
         {
             // Check if clicked on canvas background (not on a node or connection)
-            if (e.OriginalSource.As<Canvas>() == MainCanvas || e.OriginalSource == sender)
+            if (e.OriginalSource.Equals(MainCanvas) || e.OriginalSource.Equals(sender))
             {
                 // Deselect current node when clicking on empty canvas
-                if (ViewModel?.SelectedNode != null)
-                {
-                    ViewModel.SelectedNode = null;
-                }
+                ViewModel?.SelectedNode = null;
             }
         }
     }

@@ -19,20 +19,21 @@ public sealed partial class ConnectionControl : UserControl
 
     public ConnectionViewModel? ViewModel
     {
-        get;
+        get => DataContext as ConnectionViewModel;
         set
         {
-            if (field is not null)
+            ConnectionViewModel? @field = ViewModel;
+            if (@field is not null)
             {
-                field.PropertyChanged -= OnViewModelPropertyChanged;
+                @field.PropertyChanged -= OnViewModelPropertyChanged;
             }
 
-            field = value;
+            @field = value;
             DataContext = value;
 
-            if (field is not null)
+            if (@field is not null)
             {
-                field.PropertyChanged += OnViewModelPropertyChanged;
+                @field.PropertyChanged += OnViewModelPropertyChanged;
                 UpdatePath();
             }
         }

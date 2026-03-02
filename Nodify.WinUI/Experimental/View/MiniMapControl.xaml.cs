@@ -21,22 +21,23 @@ public sealed partial class MiniMapControl : UserControl
 
     public NodeEditorViewModel? ViewModel
     {
-        get;
+        get => DataContext as NodeEditorViewModel;
         set
         {
-            if (field is not null)
+            NodeEditorViewModel? @field = ViewModel;
+            if (@field is not null)
             {
-                field.Nodes.CollectionChanged -= OnViewModelNodesCollectionChanged;
-                field.PropertyChanged -= OnViewModelPropertyChanged;
+                @field.Nodes.CollectionChanged -= OnViewModelNodesCollectionChanged;
+                @field.PropertyChanged -= OnViewModelPropertyChanged;
             }
 
-            field = value;
+            @field = value;
             DataContext = value;
 
-            if (field is not null)
+            if (@field is not null)
             {
-                field.Nodes.CollectionChanged += OnViewModelNodesCollectionChanged;
-                field.PropertyChanged += OnViewModelPropertyChanged;
+                @field.Nodes.CollectionChanged += OnViewModelNodesCollectionChanged;
+                @field.PropertyChanged += OnViewModelPropertyChanged;
                 UpdateMiniMap();
             }
         }
