@@ -20,7 +20,7 @@
         <!-- Title Bar -->
         <Grid x:Name="AppTitleBar" 
               Grid.Row="0"
-              Height="48"
+              Height="32"
               Background="Transparent">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
