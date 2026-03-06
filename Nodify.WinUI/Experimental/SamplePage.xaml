@@ -201,7 +201,7 @@
                 <TextBlock
                     MinWidth="40"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind NodeEditor.ViewModel.ViewportScale, Mode=OneWay}" />
+                    Text="{x:Bind FormatScale(NodeEditor.ViewModel.ViewportScale), Mode=OneWay}" />
             </StackPanel>
         </Grid>
     </Grid>

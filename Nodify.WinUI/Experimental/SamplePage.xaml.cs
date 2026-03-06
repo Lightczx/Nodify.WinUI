@@ -39,6 +39,11 @@ public sealed partial class SamplePage : Page
         NodeEditor?.ResetView();
     }
 
+    private string FormatScale(double scale)
+    {
+        return $"{scale * 100:0}%";
+    }
+
     private void OnResetZoomClick(object sender, RoutedEventArgs e)
     {
         if (NodeEditor?.ViewModel != null)
@@ -49,8 +54,13 @@ public sealed partial class SamplePage : Page
 
     private async void OnSaveClick(object sender, RoutedEventArgs e)
     {
-        StorageFile? file = await NodeEditor?.SaveAsync();
-        if (file != null && NodeEditor?.ViewModel != null)
+        if (NodeEditor is null)
+        {
+            return;
+        }
+
+        StorageFile? file = await NodeEditor.SaveAsync();
+        if (file != null && NodeEditor.ViewModel != null)
         {
             NodeEditor.ViewModel.CurrentFileName = file.Name;
         }
@@ -58,8 +68,13 @@ public sealed partial class SamplePage : Page
 
     private async void OnLoadClick(object sender, RoutedEventArgs e)
     {
-        StorageFile? file = await NodeEditor?.LoadAsync();
-        if (file != null && NodeEditor?.ViewModel != null)
+        if (NodeEditor is null)
+        {
+            return;
+        }
+
+        StorageFile? file = await NodeEditor.LoadAsync();
+        if (file != null && NodeEditor.ViewModel != null)
         {
             NodeEditor.ViewModel.CurrentFileName = file.Name;
         }
