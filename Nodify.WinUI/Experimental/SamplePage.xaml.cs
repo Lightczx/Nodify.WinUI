@@ -46,10 +46,7 @@ public sealed partial class SamplePage : Page
 
     private void OnResetZoomClick(object sender, RoutedEventArgs e)
     {
-        if (NodeEditor?.ViewModel != null)
-        {
-            NodeEditor.ViewModel.ViewportScale = 1.0;
-        }
+        NodeEditor?.ViewModel?.ViewportScale = 1.0;
     }
 
     private async void OnSaveClick(object sender, RoutedEventArgs e)

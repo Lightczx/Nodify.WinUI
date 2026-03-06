@@ -205,8 +205,10 @@ public sealed partial class NodeEditorCanvas : UserControl
         // Use ViewModel setter (not DataContext directly) so NodeControl subscribes
         // to PropertyChanged and keeps Canvas.Left/Top in sync when X/Y change externally
         // (e.g. when CheckAndShiftNodes() shifts all nodes after a drag to negative coords).
-        NodeControl nodeControl = new();
-        nodeControl.ViewModel = node;
+        NodeControl nodeControl = new()
+        {
+            ViewModel = node,
+        };
 
         nodeControl.NodeMoved += OnNodeControlNodeMoved;
         nodeControl.DragCompleted += OnNodeControlDragCompleted;
@@ -553,18 +555,12 @@ public sealed partial class NodeEditorCanvas : UserControl
 
     public void ZoomIn()
     {
-        if (ViewModel is not null)
-        {
-            ViewModel.ViewportScale *= 1.2;
-        }
+        ViewModel?.ViewportScale *= 1.2;
     }
 
     public void ZoomOut()
     {
-        if (ViewModel is not null)
-        {
-            ViewModel.ViewportScale /= 1.2;
-        }
+        ViewModel?.ViewportScale /= 1.2;
     }
 
     public void ResetView()
